@@ -32,7 +32,7 @@
     : (sortKey===k     ? sortDir=-sortDir         : (sortKey=k,     sortDir=-1));
 
   onMount(async () => {
-    const data = await (await fetch(`${API}/ship`)).json();
+    const data = await (await fetch(`${API}/initialize`)).json();
     ships = data
       .filter(s => s.ShipName && s.ShipName !== 'Ship Name' && s.DWT)
       .map(s => ({
