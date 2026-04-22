@@ -87,43 +87,32 @@
         datasets = [{ label: chartFilter==='Ship Name'?chartShip:'Momentum', data:data.map(d=>d.momentum??0), borderColor:PALETTE[0], backgroundColor:PALETTE[0]+'33', borderWidth:2, pointRadius:3 }];
       }
     } else {
-      labels   = data.map((d,i) => d.date||`Day ${i+1}`);
-      const lbl = chartFilter==='Ship Name' ? `${chartShip} — Avg` : chartFilter==='Cruise Line' ? `${chartLine} — Avg` : 'All Ships — Avg';
-      datasets = [{
-  label: lbl,
-  data: data.map(d => {
-    if (chartFilter === 'Ship Name') {
-      return (
-        d.ship_year_avg_momentum ??
-        d.ship_avg_momentum ??
-        d.avg_momentum ??
-        d.momentum ??
-        0
-      );
-    } else if (chartFilter === 'Cruise Line') {
-      return (
-        d.cruiseline_year_avg_momentum ??
-        d.line_year_avg_momentum ??
-        d.line_avg_momentum ??
-        d.avg_momentum ??
-        d.momentum ??
-        0
-      );
-    } else {
-      return (
-        d.global_year_avg_momentum ??
-        d.global_avg_momentum ??
-        d.avg_momentum ??
-        d.momentum ??
-        0
-      );
-    }
-  }),
-  borderColor: PALETTE[0],
-  backgroundColor: PALETTE[0] + '33',
-  borderWidth: 2,
-  pointRadius: 3
-}];
+       // Group summary data by ShipName (ship_daily rows only)
+      const shipGroups = {};
+      data.forEach(d => {
+        if (d.row_type !== "ship_daily") return;   // ignore cruise/global rows
+        const sh = d.ShipName;
+        if (!sh) return;
+        if (!shipGroups[sh]) shipGroups[sh] = [];
+        shipGroups[sh].push({
+          date: d.date,
+          value: d.ship_avg_momentum ?? d.avg_momentum ?? d.momentum ?? 0
+        });
+      });
+
+      // Build labels from the first ship (all ships share same dates)
+      const firstShip = Object.keys(shipGroups)[0];
+      labels = shipGroups[firstShip]?.map(x => x.date) ?? [];
+
+      // Build one dataset per ship
+      datasets = Object.keys(shipGroups).map((sh, i) => ({
+        label: sh + " — Avg",
+        data: shipGroups[sh].map(x => x.value),
+        borderColor: PALETTE[i % PALETTE.length],
+        backgroundColor: PALETTE[i % PALETTE.length] + '33',
+        borderWidth: 2,
+        pointRadius: 3
+      }));
     }
     chartInst = new Chart(chartCanvas, {
       type: 'line', data: { labels, datasets },
