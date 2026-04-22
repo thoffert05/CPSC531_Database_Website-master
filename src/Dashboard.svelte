@@ -129,7 +129,7 @@
       type: 'line', data: { labels, datasets },
       options: { responsive:true, plugins:{ legend:{ position:'top', labels:{ color:'#e8eaf0' } } },
         scales: { x:{ ticks:{color:'#8890b0'}, grid:{color:'#1a2140'}, title:{display:true, text:chartView==='raw'?'Time':'Date', color:'#8890b0'} },
-                  y:{ ticks:{color:'#8890b0'}, grid:{color:'#1a2140'}, title:{display:true, text:'Momentum', color:'#8890b0'} } } }
+                  y:{ ticks:{color:'#8890b0'}, grid:{color:'#1a2140'}, title:{display:true, text:'Momentum kg·m/s', color:'#8890b0'} } } }
     });
   }
 
@@ -196,6 +196,7 @@
             <label>Start <input type="date" bind:value={chartStart}/></label>
             <label>End   <input type="date" bind:value={chartEnd}/></label>
           {/if}
+        <button class="ais-btn" onclick={updateChart} disabled={chartLoading}>{chartLoading?'Loading…':'Update Chart'}</button>
         <select bind:value={groupBy}><option value="Ship">By Ship</option><option value="CruiseLine">By Cruise Line</option></select>
         <input type="text" placeholder="🔍  Search ships..." bind:value={search}/>
       </div>
@@ -205,7 +206,7 @@
 
       {#if st}
       <div class="cards">
-        {#each [['Total Ships',st.total,'in selection'],['Passengers',st.pax,'combined berths'],['Total Crew',st.crew,'crew members'],['Avg Build Year',st.year,'fleet vintage'],['Pax / Crew',st.ratio,'passengers per crew'],['Largest Ship',st.big['Ship Name'],`${st.big.GT.toLocaleString()} GT`,'sm']] as [lbl,val,sub,cls]}
+        {#each [['Total Ships',st.total,'in selection'],['Passengers',st.pax,'combined berths'],['Total Crew',st.crew,'crew members'],['Avg Build Year',st.year,'fleet vintage'],['Pass / Crew',st.ratio,'passengers per crew'],['Largest Ship',st.big['Ship Name'],`${st.big.GT.toLocaleString()} GT`,'sm']] as [lbl,val,sub,cls]}
           <div class="card"><span class="clbl">{lbl}</span><div class="val {cls||''}">{val}</div><small>{sub}</small></div>
         {/each}
       </div>
