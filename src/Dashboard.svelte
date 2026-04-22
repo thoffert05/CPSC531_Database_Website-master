@@ -184,6 +184,18 @@
     <div class="topbar">
       <h2>{activeTab==='fleet'?'Fleet Registry':activeTab==='analytics'?'Analytics':'AIS Chart'}</h2>
       <div class="tr">
+          <label>View
+            <select bind:value={chartView}>
+              <option value="raw">Raw (Single Day)</option>
+              <option value="summary">Summary (Date Range)</option>
+            </select>
+          </label>
+          {#if chartView==='raw'}
+            <label>Date <input type="date" bind:value={chartDate}/></label>
+          {:else}
+            <label>Start <input type="date" bind:value={chartStart}/></label>
+            <label>End   <input type="date" bind:value={chartEnd}/></label>
+          {/if}
         <select bind:value={groupBy}><option value="Ship">By Ship</option><option value="CruiseLine">By Cruise Line</option></select>
         <input type="text" placeholder="🔍  Search ships..." bind:value={search}/>
       </div>
