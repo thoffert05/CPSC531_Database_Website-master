@@ -89,7 +89,41 @@
     } else {
       labels   = data.map((d,i) => d.date||`Day ${i+1}`);
       const lbl = chartFilter==='Ship Name' ? `${chartShip} — Avg` : chartFilter==='Cruise Line' ? `${chartLine} — Avg` : 'All Ships — Avg';
-      datasets = [{ label:lbl, data:data.map(d=>d.ship_avg_momentum??d.avg_momentum??d.momentum??0), borderColor:PALETTE[0], backgroundColor:PALETTE[0]+'33', borderWidth:2, pointRadius:3 }];
+      datasets = [{
+  label: lbl,
+  data: data.map(d => {
+    if (chartFilter === 'Ship Name') {
+      return (
+        d.ship_year_avg_momentum ??
+        d.ship_avg_momentum ??
+        d.avg_momentum ??
+        d.momentum ??
+        0
+      );
+    } else if (chartFilter === 'Cruise Line') {
+      return (
+        d.cruiseline_year_avg_momentum ??
+        d.line_year_avg_momentum ??
+        d.line_avg_momentum ??
+        d.avg_momentum ??
+        d.momentum ??
+        0
+      );
+    } else {
+      return (
+        d.global_year_avg_momentum ??
+        d.global_avg_momentum ??
+        d.avg_momentum ??
+        d.momentum ??
+        0
+      );
+    }
+  }),
+  borderColor: PALETTE[0],
+  backgroundColor: PALETTE[0] + '33',
+  borderWidth: 2,
+  pointRadius: 3
+}];
     }
     chartInst = new Chart(chartCanvas, {
       type: 'line', data: { labels, datasets },
