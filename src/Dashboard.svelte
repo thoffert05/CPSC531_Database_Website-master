@@ -58,7 +58,10 @@
   let chartInst = null;
   let GLOBAL_COLOR=null;
   let SHIP_COLORS = {};
-let LINE_COLORS = {};
+  let LINE_COLORS = {};
+  let showGlobal = $state(true);
+  let showShips = $state(true);
+  let showCruiseLines = $state(true);
 
 function buildColorMaps(shipNames, cruiseLines) {
   // Ships: 0–91
