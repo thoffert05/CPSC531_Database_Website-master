@@ -62,7 +62,6 @@
   let showGlobal = $state(true);
   let showShips = $state(true);
   let showCruiseLines = $state(true);
-  let chartCanvas;
   let chartInitialized = false;
 
 function buildColorMaps(shipNames, cruiseLines) {
