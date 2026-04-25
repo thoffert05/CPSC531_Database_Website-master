@@ -52,7 +52,7 @@
   let selectedShip = $state(null), activeTab = $state('fleet'), groupBy = $state('Ship');
 
   let chartView = $state('raw'), chartFilter = $state('None');
-  let chartDate = $state('2019-05-09'), chartStart = $state('2019-05-01'), chartEnd = $state('2019-05-31');
+  let chartDate = $state('2019-05-09'), chartStart = $state('2019-01-01'), chartEnd = $state('2019-12-31');
   let chartShip = $state(''), chartLine = $state('');
   let chartLoading = $state(false), chartError = $state(''), chartCanvas = $state(null);
   let chartInst = null;
