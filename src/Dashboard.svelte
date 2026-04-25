@@ -395,37 +395,7 @@ function renderChart(data) {
       </div>
       {/if}
 
-      {#if activeTab==='ais'}
-      <div class="ais-wrap">
-        <div class="ais-controls">
-          <label>View
-            <select bind:value={chartView}>
-              <option value="raw">Raw (Single Day)</option>
-              <option value="summary">Summary (Date Range)</option>
-            </select>
-          </label>
-          {#if chartView==='raw'}
-            <label>Date <input type="date" bind:value={chartDate}/></label>
-          {:else}
-            <label>Start <input type="date" bind:value={chartStart}/></label>
-            <label>End   <input type="date" bind:value={chartEnd}/></label>
-          {/if}
-          <label>Filter
-            <select bind:value={chartFilter}>
-              <option>Ship Name</option><option>Cruise Line</option><option>None</option>
-            </select>
-          </label>
-          {#if chartFilter==='Ship Name'}
-            <label>Ship <select bind:value={chartShip}>{#each shipNames as n}<option>{n}</option>{/each}</select></label>
-          {:else if chartFilter==='Cruise Line'}
-            <label>Line <select bind:value={chartLine}>{#each lines.slice(1) as l}<option>{l}</option>{/each}</select></label>
-          {/if}
-          <button class="ais-btn" onclick={updateChart} disabled={chartLoading}>{chartLoading?'Loading…':'Update Chart'}</button>
-        </div>
-        {#if chartError}<p class="ais-err">{chartError}</p>{/if}
-        <div class="ais-chart-box"><canvas bind:this={chartCanvas}></canvas></div>
-      </div>
-      {/if}
+  
 
       {#if activeTab!=='ais'}
       <div class="tw">
