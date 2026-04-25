@@ -395,7 +395,13 @@ function renderChart(data) {
       </div>
       {/if}
 
-  
+  {#if activeTab === 'ais'}
+  <div class="ais-wrap">
+    <div class="ais-chart-box">
+      <canvas bind:this={chartCanvas}></canvas>
+    </div>
+  </div>
+{/if}
 
       {#if activeTab!=='ais'}
       <div class="tw">
