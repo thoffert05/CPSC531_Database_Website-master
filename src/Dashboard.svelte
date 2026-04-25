@@ -62,6 +62,8 @@
   let showGlobal = $state(true);
   let showShips = $state(true);
   let showCruiseLines = $state(true);
+  let chartCanvas;
+  let chartInitialized = false;
 
 function buildColorMaps(shipNames, cruiseLines) {
   // Ships: 0–91
@@ -318,6 +320,11 @@ function renderChart(data) {
   const maxPax   = $derived(byLine[0]?.[1]||1);
   const byDecade = $derived(Object.entries(baseFiltered.reduce((a,s)=>{const d=Math.floor(s.YearBuilt/10)*10;a[d]=(a[d]||0)+1;return a;},{})).sort((a,b)=>a[0]-b[0]).map(([d,n])=>[d+'s',n]));
   const maxDec   = $derived(Math.max(...byDecade.map(([,v])=>v),1));
+  // Auto-run when switching to AIS tab
+  $: if (activeTab === 'ais' && chartCanvas && !chartInitialized) {
+    chartInitialized = true;
+    updateChart();
+  }
 </script>
 
 <div class="app">
