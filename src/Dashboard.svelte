@@ -184,6 +184,8 @@
           {:else}
             <label>Start <input type="date" bind:value={chartStart}/></label>
             <label>End   <input type="date" bind:value={chartEnd}/></label>
+            <label><input type="checkbox" id="showShips" name="showShips" checked>Show ships</label>
+            <label><input type="checkbox" id="showCruiseLines" name="showCruiseLines" checked>Show cruise lines/label>
           {/if}
         <button class="ais-btn" onclick={updateChart} disabled={chartLoading}>{chartLoading?'Loading…':'Update Chart'}</button>
         <select bind:value={groupBy}><option value="Ship">By Ship</option><option value="CruiseLine">By Cruise Line</option></select>
