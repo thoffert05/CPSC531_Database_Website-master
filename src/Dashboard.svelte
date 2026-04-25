@@ -56,7 +56,7 @@
   let chartShip = $state(''), chartLine = $state('');
   let chartLoading = $state(false), chartError = $state(''), chartCanvas = $state(null);
   let chartInst = null;
-  leg GLOBAL_COLOR=null;
+  let GLOBAL_COLOR=null;
   let SHIP_COLORS = {};
 let LINE_COLORS = {};
 
