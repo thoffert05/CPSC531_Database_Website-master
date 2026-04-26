@@ -282,6 +282,8 @@ if (type === "global_daily" && showGlobal) {
   });
 }
 
+});
+
     // Build labels from the first available group
     const first =
       Object.values(shipGroups)[0] ||
