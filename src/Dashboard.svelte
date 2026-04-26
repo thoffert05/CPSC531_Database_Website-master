@@ -95,16 +95,16 @@ function buildColorMaps(shipNames, cruiseLines) {
   onMount(async () => {
     const data = await (await fetch(`${API}/initialize`)).json();
     ships = data
-      .filter(s => s.ShipName && s.ShipName !== 'Ship Name' && s.DWT)
-      .map(s => ({
-        ShipName: s.ShipName,
-        CruiseLine: s.CruiseLine || '',
-        DWT: s.DWT || 0,
-        GT: s.GT || 0,
-        YearBuilt: s.YearBuilt || 0,
-        PassengerCapacity: s.PassengerCapacity || 0,
-        CrewCount: s.CrewCount || 0
-      }));
+    .filter(s => s.ShipName && s.ShipName !== 'Ship Name' && s.DWT)
+    .map(s => ({
+                 "Ship Name": s.ShipName,
+                  CruiseLine: s.CruiseLine || '',
+                  DWT: s.DWT || 0,
+                  GT: s.GT || 0,
+                  YearBuilt: s.YearBuilt || 0,
+                  PassengerCapacity: s.PassengerCapacity || 0,
+                  CrewCount: s.CrewCount || 0
+    }));
 
   });
   onMount(async () => {
