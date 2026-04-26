@@ -105,16 +105,7 @@ function buildColorMaps(shipNames, cruiseLines) {
         PassengerCapacity: s.PassengerCapacity || 0,
         CrewCount: s.CrewCount || 0
       }));
-      cruise_lines = [
-        'All',
-        ...Array.from(
-          new Set(
-            data
-              .filter(s => s.CruiseLine && s.CruiseLine !== 'Cruise Line')
-              .map(s => s.CruiseLine)
-          )
-        )
-      ];
+
   });
   onMount(async () => {
   const shipList = await (await fetch(`${API}/ship`)).json();
@@ -333,7 +324,7 @@ function renderChart(data) {
     total: filtered.length, pax: sum(filtered,'PassengerCapacity').toLocaleString(),
     crew: sum(filtered,'CrewCount').toLocaleString(), year: Math.round(sum(filtered,'YearBuilt')/filtered.length),
     ratio: (sum(filtered,'PassengerCapacity')/sum(filtered,'CrewCount')).toFixed(1),
-    big: filtered.reduce((a,b) => a.GT>b.GT?a:b)
+    big: filtered.reduce((a, b) => (a.GT || 0) > (b.GT || 0) ? a : b)
   } : null);
   const byLine   = $derived(Object.entries(baseFiltered.reduce((a,s)=>(a[s.CruiseLine]=(a[s.CruiseLine]||0)+s.PassengerCapacity,a),{})).sort((a,b)=>b[1]-a[1]).slice(0,10));
   const maxPax   = $derived(byLine[0]?.[1]||1);
