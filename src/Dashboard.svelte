@@ -200,9 +200,9 @@ function renderChart(data) {
   let labels = [];
   let datasets = [];
 
-  //______________________________________________
-  // RAW VIEW (group by ship only — raw AIS has no cruise line/global rows)
-  //______________________________________________
+  //===========================================================
+  // RAW VIEW (group by ship only — raw AIS has no summary rows)
+  //===========================================================
   if (chartView === 'raw') {
 
     const grp = {};
@@ -210,8 +210,7 @@ function renderChart(data) {
     data.forEach(d => {
       const sh = d.ShipName || d.ship_name;
       if (!sh) return;
-
-      if (!showShips) return;   // checkbox filter
+      if (!showShips) return;
 
       const t = (d.BaseDateTime || '').slice(11, 19);
       if (!grp[sh]) grp[sh] = {};
@@ -231,57 +230,64 @@ function renderChart(data) {
     }));
   }
 
-  //______________________________________________
+  //===========================================================
   // SUMMARY VIEW (ships + cruise lines + global)
-  //______________________________________________
+  //===========================================================
   else {
 
     const shipGroups = {};
     const lineGroups = {};
     const globalGroup = [];
 
+    //---------------------------------------------------------
+    // GROUPING LOOP — this is the part that was broken before
+    //---------------------------------------------------------
     data.forEach(d => {
       const type = d.row_type;
 
       // SHIP DAILY
-     Object.keys(shipGroups).forEach(sh => {
-  datasets.push({
-    label: sh,
-    data: shipGroups[sh].map(x => x.value),
-    borderColor: SHIP_COLORS[sh],
-    backgroundColor: 'rgba(0,0,0,0)',
-    borderWidth: 2,
-    pointRadius: 3
-  });
-});
+      if (type === "ship_daily" && showShips) {
+        const sh = d.ShipName;
+        if (!shipGroups[sh]) shipGroups[sh] = [];
+
+        const { avg, max } = pickMomentum(d);
+
+        shipGroups[sh].push({
+          date: d.date,
+          avg,
+          max
+        });
+      }
 
       // CRUISE LINE DAILY
-Object.keys(lineGroups).forEach(cl => {
-  datasets.push({
-    label: cl + " — Line",
-    data: lineGroups[cl].map(x => x.value),
-    borderColor: LINE_COLORS[cl],
-    backgroundColor: 'rgba(0,0,0,0)',
-    borderWidth: 2,
-    pointRadius: 3
-  });
-});
+      if (type === "cruiseline_daily" && showCruiseLines) {
+        const cl = d.CruiseLine;
+        if (!lineGroups[cl]) lineGroups[cl] = [];
+
+        const { avg, max } = pickMomentum(d);
+
+        lineGroups[cl].push({
+          date: d.date,
+          avg,
+          max
+        });
+      }
 
       // GLOBAL DAILY
-if (globalGroup.length) {
-  datasets.push({
-    label: "Global — Total",
-    data: globalGroup.map(x => x.value),
-    borderColor: GLOBAL_COLOR,
-    backgroundColor: 'rgba(0,0,0,0)',
-    borderWidth: 3,
-    pointRadius: 4
-  });
-}
+      if (type === "global_daily" && showGlobal) {
+        const { avg, max } = pickMomentum(d);
 
-});
+        globalGroup.push({
+          date: d.date,
+          avg,
+          max
+        });
+      }
+    });
 
-    // Build labels from the first available group
+    //---------------------------------------------------------
+    // LABELS
+    //---------------------------------------------------------
     const first =
       Object.values(shipGroups)[0] ||
       Object.values(lineGroups)[0] ||
@@ -289,46 +295,95 @@ if (globalGroup.length) {
 
     labels = first?.map(x => x.date) ?? [];
 
-    // SHIP DATASETS
+    //---------------------------------------------------------
+    // DATASETS — momentumView aware
+    //---------------------------------------------------------
+
+    // SHIPS
     Object.keys(shipGroups).forEach(sh => {
-      datasets.push({
-        label: sh,
-        data: shipGroups[sh].map(x => x.value),
-        borderColor: SHIP_COLORS[sh],
-        backgroundColor: 'rgba(0,0,0,0)',
-        borderWidth: 2,
-        pointRadius: 3
-      });
+      const rows = shipGroups[sh];
+
+      if (momentumView !== "Max") {
+        datasets.push({
+          label: `${sh} (Avg)`,
+          data: rows.map(r => r.avg),
+          borderColor: SHIP_COLORS[sh],
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderWidth: 2,
+          pointRadius: 3
+        });
+      }
+
+      if (momentumView !== "Average") {
+        datasets.push({
+          label: `${sh} (Max)`,
+          data: rows.map(r => r.max),
+          borderColor: SHIP_COLORS_DARK[sh],
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderWidth: 2,
+          pointRadius: 3
+        });
+      }
     });
 
-    // CRUISE LINE DATASETS
+    // CRUISE LINES
     Object.keys(lineGroups).forEach(cl => {
-      datasets.push({
-        label: cl + " — Line",
-        data: lineGroups[cl].map(x => x.value),
-        borderColor: LINE_COLORS[cl],
-        backgroundColor: 'rgba(0,0,0,0)',
-        borderWidth: 2,
-        pointRadius: 3
-      });
+      const rows = lineGroups[cl];
+
+      if (momentumView !== "Max") {
+        datasets.push({
+          label: `${cl} (Avg)`,
+          data: rows.map(r => r.avg),
+          borderColor: LINE_COLORS[cl],
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderWidth: 2,
+          pointRadius: 3
+        });
+      }
+
+      if (momentumView !== "Average") {
+        datasets.push({
+          label: `${cl} (Max)`,
+          data: rows.map(r => r.max),
+          borderColor: LINE_COLORS_DARK[cl],
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderWidth: 2,
+          pointRadius: 3
+        });
+      }
     });
 
-    // GLOBAL DATASET
+    // GLOBAL
     if (globalGroup.length) {
-      datasets.push({
-        label: "Global — Total",
-        data: globalGroup.map(x => x.value),
-        borderColor: GLOBAL_COLOR,
-        backgroundColor: 'rgba(0,0,0,0)',
-        borderWidth: 3,
-        pointRadius: 4
-      });
+      const rows = globalGroup;
+
+      if (momentumView !== "Max") {
+        datasets.push({
+          label: "Global (Avg)",
+          data: rows.map(r => r.avg),
+          borderColor: GLOBAL_COLOR,
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderWidth: 3,
+          pointRadius: 4
+        });
+      }
+
+      if (momentumView !== "Average") {
+        datasets.push({
+          label: "Global (Max)",
+          data: rows.map(r => r.max),
+          borderColor: GLOBAL_COLOR_DARK,
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderWidth: 3,
+          pointRadius: 4
+        });
+      }
     }
   }
 
-  //______________________________________________
+  //===========================================================
   // BUILD CHART
-  //______________________________________________
+  //===========================================================
   chartInst = new Chart(chartCanvas, {
     type: 'line',
     data: { labels, datasets },
