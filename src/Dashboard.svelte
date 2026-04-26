@@ -230,7 +230,7 @@ function renderChart(data) {
       spanGaps: true
     }));
   }
-}
+
   //______________________________________________
   // SUMMARY VIEW (ships + cruise lines + global)
   //______________________________________________
