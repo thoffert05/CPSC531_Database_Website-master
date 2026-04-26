@@ -59,7 +59,7 @@
   let chartShip = $state(''), chartLine = $state('');
   let chartLoading = $state(false), chartError = $state(''), chartCanvas = $state(null);
   let chartInst = null;
-  let GLOBAL_COLOR=null;
+  let GLOBAL_COLOR={};
   let SHIP_COLORS = {};
   let LINE_COLORS = {};
   let showGlobal = $state(true);
@@ -244,41 +244,38 @@ function renderChart(data) {
       const type = d.row_type;
 
       // SHIP DAILY
-      if (type === "ship_daily" && showShips) {
-  const sh = d.ShipName;
-  if (!shipGroups[sh]) shipGroups[sh] = [];
-
-  const { avg, max } = pickMomentum(d);
-
-  shipGroups[sh].push({
-    date: d.date,
-    avg,
-    max
+     Object.keys(shipGroups).forEach(sh => {
+  datasets.push({
+    label: sh,
+    data: shipGroups[sh].map(x => x.value),
+    borderColor: SHIP_COLORS[sh],
+    backgroundColor: 'rgba(0,0,0,0)',
+    borderWidth: 2,
+    pointRadius: 3
   });
-}
+});
 
       // CRUISE LINE DAILY
-if (type === "cruiseline_daily" && showCruiseLines) {
-  const cl = d.CruiseLine;
-  if (!lineGroups[cl]) lineGroups[cl] = [];
-
-  const { avg, max } = pickMomentum(d);
-
-  lineGroups[cl].push({
-    date: d.date,
-    avg,
-    max
+Object.keys(lineGroups).forEach(cl => {
+  datasets.push({
+    label: cl + " — Line",
+    data: lineGroups[cl].map(x => x.value),
+    borderColor: LINE_COLORS[cl],
+    backgroundColor: 'rgba(0,0,0,0)',
+    borderWidth: 2,
+    pointRadius: 3
   });
-}
+});
 
       // GLOBAL DAILY
-if (type === "global_daily" && showGlobal) {
-  const { avg, max } = pickMomentum(d);
-
-  globalGroup.push({
-    date: d.date,
-    avg,
-    max
+if (globalGroup.length) {
+  datasets.push({
+    label: "Global — Total",
+    data: globalGroup.map(x => x.value),
+    borderColor: GLOBAL_COLOR,
+    backgroundColor: 'rgba(0,0,0,0)',
+    borderWidth: 3,
+    pointRadius: 4
   });
 }
 
