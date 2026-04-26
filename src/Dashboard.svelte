@@ -27,7 +27,6 @@
   "hsl(188.7378640776699,65%,50%)","hsl(192.23300970873786,65%,50%)","hsl(195.72815533980582,65%,50%)",
   "hsl(199.22330097087378,65%,50%)","hsl(202.71844660194175,65%,50%)","hsl(206.2135922330097,65%,50%)",
   "hsl(209.70873786407767,65%,50%)","hsl(213.20388349514563,65%,50%)","hsl(216.6990291262136,65%,50%)",
-  "hsl(220.19417475728155,65%,50%)","hsl(223.6893203883495,65%,50%)","hsl(227.18446601941748,65%,50%)",
   "hsl(230.67961165048544,65%,50%)","hsl(234.1747572815534,65%,50%)","hsl(237.66990291262137,65%,50%)",
   "hsl(241.16504854368933,65%,50%)","hsl(244.6601941747573,65%,50%)","hsl(248.15533980582525,65%,50%)",
   "hsl(251.6504854368932,65%,50%)","hsl(255.14563106796118,65%,50%)","hsl(258.6407766990291,65%,50%)",
@@ -40,17 +39,21 @@
   "hsl(325.0485436893204,65%,50%)","hsl(328.5436893203883,65%,50%)","hsl(332.0388349514563,65%,50%)",
   "hsl(335.53398058252427,65%,50%)","hsl(339.0291262135922,65%,50%)","hsl(342.5242718446602,65%,50%)",
   "hsl(346.01941747572817,65%,50%)","hsl(349.5145631067961,65%,50%)","hsl(353.0097087378641,65%,50%)",
-  "hsl(356.50485436893204,65%,50%)"
+  "hsl(220.19417475728155,65%,50%)","hsl(227.18446601941748,65%,50%)","hsl(356.50485436893204,65%,50%)",
+  "hsl(223.6893203883495,65%,50%)"
 ];
 
   const SHIP_COLS = [['Ship Name','Ship Name'],['CruiseLine','Line'],['YearBuilt','Built'],['GT','GT'],['PassengerCapacity','Pax'],['CrewCount','Crew'],['DWT','DWT']];
   const LINE_COLS = [['CruiseLine','Cruise Line'],['shipCount','Ships'],['totalPax','Total Pax'],['totalCrew','Crew'],['avgYear','Avg Built'],['totalDWT','Total DWT']];
 
   let ships = $state([]), search = $state(''), selectedLine = $state('All');
+  let cruise_lines=$state([]);
+  let selectedCruiseLine = $state('All');
+  let cruiseLineSearch = $state('');
   let sortKey = $state('PassengerCapacity'), sortDir = $state(-1);
   let lineSortKey = $state('totalPax'), lineSortDir = $state(-1);
   let selectedShip = $state(null), activeTab = $state('fleet'), groupBy = $state('Ship');
-
+ 
   let chartView = $state('raw'), chartFilter = $state('None');
   let chartDate = $state('2019-05-09'), chartStart = $state('2019-01-01'), chartEnd = $state('2019-12-31');
   let chartShip = $state(''), chartLine = $state('');
@@ -94,10 +97,24 @@ function buildColorMaps(shipNames, cruiseLines) {
     ships = data
       .filter(s => s.ShipName && s.ShipName !== 'Ship Name' && s.DWT)
       .map(s => ({
-        'Ship Name': s.ShipName, CruiseLine: s.CruiseLine||'',
-        DWT: s.DWT||0, GT: s.GT||0, YearBuilt: s.YearBuilt||0,
-        PassengerCapacity: s.PassengerCapacity||0, CrewCount: s.CrewCount||0
+        ShipName: s.ShipName,
+        CruiseLine: s.CruiseLine || '',
+        DWT: s.DWT || 0,
+        GT: s.GT || 0,
+        YearBuilt: s.YearBuilt || 0,
+        PassengerCapacity: s.PassengerCapacity || 0,
+        CrewCount: s.CrewCount || 0
       }));
+      cruise_lines = [
+        'All',
+        ...Array.from(
+          new Set(
+            data
+              .filter(s => s.CruiseLine && s.CruiseLine !== 'Cruise Line')
+              .map(s => s.CruiseLine)
+          )
+        )
+      ];
   });
   onMount(async () => {
   const shipList = await (await fetch(`${API}/ship`)).json();
@@ -199,14 +216,17 @@ function renderChart(data) {
       }
 
       // CRUISE LINE DAILY
-      if (type === "cruiseline_daily" && showCruiseLines) {
-        const cl = d.CruiseLine;
-        if (!lineGroups[cl]) lineGroups[cl] = [];
-        lineGroups[cl].push({
-          date: d.date,
-          value: d.cl_avg_momentum ?? d.avg_momentum ?? d.momentum ?? 0
-        });
-      }
+     if (type === "cruiseline_daily" && showCruiseLines) {
+              const cl = d.CruiseLine;
+              if (!lineGroups[cl]) lineGroups[cl] = [];
+              lineGroups[cl].push({
+              date: d.date,
+              value: d.cruiseline_avg_momentum 
+              ?? d.cruiseline_max_momentum 
+              ?? d.momentum 
+              ?? 0
+              });
+    }
 
       // GLOBAL DAILY
       if (type === "global_daily" && showGlobal) {
