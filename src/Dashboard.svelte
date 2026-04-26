@@ -381,9 +381,18 @@ $effect(() => {
             <label><input type="checkbox" bind:checked={showCruiseLines}>Show cruise lines</label>
             <label><input type="checkbox" bind:checked={showGlobal}>Show global totals</label>
           {/if}
+
+<label>Filter
+            <select bind:value={chartFilter}>
+              <option>Ship Name</option><option>Cruise Line</option><option>None</option>
+            </select>
+          </label>
+          {#if chartFilter==='Ship Name'}
+            <label>Ship <select bind:value={chartShip}>{#each shipNames as n}<option>{n}</option>{/each}</select></label>
+          {:else if chartFilter==='Cruise Line'}
+            <label>Line <select bind:value={chartLine}>{#each lines.slice(1) as l}<option>{l}</option>{/each}</select></label>
+          {/if}
         <button class="ais-btn" onclick={updateChart} disabled={chartLoading}>{chartLoading?'Loading…':'Update Chart'}</button>
-        <select bind:value={groupBy}><option value="Ship">By Ship</option><option value="CruiseLine">By Cruise Line</option></select>
-        <input type="text" placeholder="🔍  Search ships..." bind:value={search}/>
       </div>
     </div>
 
