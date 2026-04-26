@@ -201,7 +201,7 @@ function renderChart(data) {
   let datasets = [];
 
   //===========================================================
-  // RAW VIEW (group by ship only — raw AIS has no summary rows)
+  // RAW VIEW
   //===========================================================
   if (chartView === 'raw') {
 
@@ -209,12 +209,11 @@ function renderChart(data) {
 
     data.forEach(d => {
       const sh = d.ShipName || d.ship_name;
-      if (!sh) return;
-      if (!showShips) return;
+      if (!sh || !showShips) return;
 
       const t = (d.BaseDateTime || '').slice(11, 19);
       if (!grp[sh]) grp[sh] = {};
-      grp[sh][t] = d.momentum ?? 0;
+      grp[sh][t] = d.momentum ?? null;
     });
 
     labels = [...new Set(data.map(d => (d.BaseDateTime || '').slice(11, 19)))].sort();
@@ -231,82 +230,98 @@ function renderChart(data) {
   }
 
   //===========================================================
-  // SUMMARY VIEW (ships + cruise lines + global)
+  // SUMMARY VIEW
   //===========================================================
   else {
 
     const shipGroups = {};
     const lineGroups = {};
-    const globalGroup = [];
+    let globalGroup = [];
 
     //---------------------------------------------------------
-    // GROUPING LOOP — this is the part that was broken before
+    // GROUPING
     //---------------------------------------------------------
     data.forEach(d => {
       const type = d.row_type;
 
-      // SHIP DAILY
       if (type === "ship_daily" && showShips) {
         const sh = d.ShipName;
         if (!shipGroups[sh]) shipGroups[sh] = [];
-
-        const { avg, max } = pickMomentum(d);
-
         shipGroups[sh].push({
           date: d.date,
-          avg,
-          max
+          avg: d.ship_avg_momentum,
+          max: d.ship_max_momentum
         });
       }
 
-      // CRUISE LINE DAILY
       if (type === "cruiseline_daily" && showCruiseLines) {
         const cl = d.CruiseLine;
         if (!lineGroups[cl]) lineGroups[cl] = [];
-
-        const { avg, max } = pickMomentum(d);
-
         lineGroups[cl].push({
           date: d.date,
-          avg,
-          max
+          avg: d.cruiseline_avg_momentum,
+          max: d.cruiseline_max_momentum
         });
       }
 
-      // GLOBAL DAILY
       if (type === "global_daily" && showGlobal) {
-        const { avg, max } = pickMomentum(d);
-
         globalGroup.push({
           date: d.date,
-          avg,
-          max
+          avg: d.global_avg_momentum,
+          max: d.global_max_momentum
         });
       }
     });
 
     //---------------------------------------------------------
-    // LABELS
+    // DEDUPE BY DATE (important for stability)
     //---------------------------------------------------------
-    const first =
-      Object.values(shipGroups)[0] ||
-      Object.values(lineGroups)[0] ||
-      globalGroup;
+    function dedupe(rows) {
+      const map = new Map();
+      rows.forEach(r => map.set(r.date, r));
+      return [...map.values()];
+    }
 
-    labels = first?.map(x => x.date) ?? [];
+    Object.keys(shipGroups).forEach(sh => {
+      shipGroups[sh] = dedupe(shipGroups[sh]);
+    });
+
+    Object.keys(lineGroups).forEach(cl => {
+      lineGroups[cl] = dedupe(lineGroups[cl]);
+    });
+
+    globalGroup = dedupe(globalGroup);
 
     //---------------------------------------------------------
-    // DATASETS — momentumView aware
+    // UNIFIED LABELS ACROSS ALL GROUPS
+    //---------------------------------------------------------
+    const allDates = new Set();
+
+    Object.values(shipGroups).forEach(rows =>
+      rows.forEach(r => allDates.add(r.date))
+    );
+
+    Object.values(lineGroups).forEach(rows =>
+      rows.forEach(r => allDates.add(r.date))
+    );
+
+    globalGroup.forEach(r => allDates.add(r.date));
+
+    labels = [...allDates].sort();
+
+    //---------------------------------------------------------
+    // DATASETS
     //---------------------------------------------------------
 
     // SHIPS
     Object.keys(shipGroups).forEach(sh => {
       const rows = shipGroups[sh];
+      const map = new Map(rows.map(r => [r.date, r]));
 
       if (momentumView !== "Max") {
         datasets.push({
           label: `${sh} (Avg)`,
-          data: rows.map(r => r.avg),
+          data: labels.map(d => map.get(d)?.avg ?? null),
           borderColor: SHIP_COLORS[sh],
           backgroundColor: 'rgba(0,0,0,0)',
           borderWidth: 2,
@@ -317,7 +332,7 @@ function renderChart(data) {
       if (momentumView !== "Average") {
         datasets.push({
           label: `${sh} (Max)`,
-          data: rows.map(r => r.max),
+          data: labels.map(d => map.get(d)?.max ?? null),
           borderColor: SHIP_COLORS_DARK[sh],
           backgroundColor: 'rgba(0,0,0,0)',
           borderWidth: 2,
@@ -329,11 +344,12 @@ function renderChart(data) {
     // CRUISE LINES
     Object.keys(lineGroups).forEach(cl => {
       const rows = lineGroups[cl];
+      const map = new Map(rows.map(r => [r.date, r]));
 
       if (momentumView !== "Max") {
         datasets.push({
           label: `${cl} (Avg)`,
-          data: rows.map(r => r.avg),
+          data: labels.map(d => map.get(d)?.avg ?? null),
           borderColor: LINE_COLORS[cl],
           backgroundColor: 'rgba(0,0,0,0)',
           borderWidth: 2,
@@ -344,7 +360,7 @@ function renderChart(data) {
       if (momentumView !== "Average") {
         datasets.push({
           label: `${cl} (Max)`,
-          data: rows.map(r => r.max),
+          data: labels.map(d => map.get(d)?.max ?? null),
           borderColor: LINE_COLORS_DARK[cl],
           backgroundColor: 'rgba(0,0,0,0)',
           borderWidth: 2,
@@ -355,12 +371,12 @@ function renderChart(data) {
 
     // GLOBAL
     if (globalGroup.length) {
-      const rows = globalGroup;
+      const map = new Map(globalGroup.map(r => [r.date, r]));
 
       if (momentumView !== "Max") {
         datasets.push({
           label: "Global (Avg)",
-          data: rows.map(r => r.avg),
+          data: labels.map(d => map.get(d)?.avg ?? null),
           borderColor: GLOBAL_COLOR,
           backgroundColor: 'rgba(0,0,0,0)',
           borderWidth: 3,
@@ -371,7 +387,7 @@ function renderChart(data) {
       if (momentumView !== "Average") {
         datasets.push({
           label: "Global (Max)",
-          data: rows.map(r => r.max),
+          data: labels.map(d => map.get(d)?.max ?? null),
           borderColor: GLOBAL_COLOR_DARK,
           backgroundColor: 'rgba(0,0,0,0)',
           borderWidth: 3,
@@ -415,6 +431,7 @@ function renderChart(data) {
     }
   });
 }
+
 
   // ── Derived
   const lines        = $derived(['All', ...[...new Set(ships.map(s=>s.CruiseLine).filter(Boolean))].sort()]);
