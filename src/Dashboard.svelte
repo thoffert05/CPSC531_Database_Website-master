@@ -66,6 +66,7 @@
   let showShips = $state(true);
   let showCruiseLines = $state(true);
   let chartInitialized = false;
+  let momentumView = $state("Average_and_Max");
 
 function buildColorMaps(shipNames, cruiseLines) {
   // Ships: 0–91
@@ -121,6 +122,52 @@ function buildColorMaps(shipNames, cruiseLines) {
 
   buildColorMaps(shipNames, cruiseLines);
 });
+function pickMomentum(d) {
+  if (momentumView === "Average") {
+    return {
+      avg: (
+        d.ship_avg_momentum ??
+        d.cruiseline_avg_momentum ??
+        d.global_avg_momentum ??
+        d.avg_momentum ??
+        null
+      ),
+      max: null
+    };
+  }
+
+  if (momentumView === "Max") {
+    return {
+      avg: null,
+      max: (
+        d.ship_max_momentum ??
+        d.cruiseline_max_momentum ??
+        d.global_max_momentum ??
+        d.max_momentum ??
+        null
+      )
+    };
+  }
+
+  // BOTH
+  return {
+    avg: (
+      d.ship_avg_momentum ??
+      d.cruiseline_avg_momentum ??
+      d.global_avg_momentum ??
+      d.avg_momentum ??
+      null
+    ),
+    max: (
+      d.ship_max_momentum ??
+      d.cruiseline_max_momentum ??
+      d.global_max_momentum ??
+      d.max_momentum ??
+      null
+    )
+  };
+}
+
   // ── AIS Chart
   async function updateChart() {
     if (!chartCanvas) return;
@@ -198,35 +245,42 @@ function renderChart(data) {
 
       // SHIP DAILY
       if (type === "ship_daily" && showShips) {
-        const sh = d.ShipName;
-        if (!shipGroups[sh]) shipGroups[sh] = [];
-        shipGroups[sh].push({
-          date: d.date,
-          value: d.ship_avg_momentum ?? d.avg_momentum ?? d.momentum ?? 0
-        });
-      }
+  const sh = d.ShipName;
+  if (!shipGroups[sh]) shipGroups[sh] = [];
+
+  const { avg, max } = pickMomentum(d);
+
+  shipGroups[sh].push({
+    date: d.date,
+    avg,
+    max
+  });
+}
 
       // CRUISE LINE DAILY
-     if (type === "cruiseline_daily" && showCruiseLines) {
-              const cl = d.CruiseLine;
-              if (!lineGroups[cl]) lineGroups[cl] = [];
-              lineGroups[cl].push({
-              date: d.date,
-              value: d.cruiseline_avg_momentum 
-              ?? d.cruiseline_max_momentum 
-              ?? d.momentum 
-              ?? 0
-              });
-    }
+if (type === "cruiseline_daily" && showCruiseLines) {
+  const cl = d.CruiseLine;
+  if (!lineGroups[cl]) lineGroups[cl] = [];
+
+  const { avg, max } = pickMomentum(d);
+
+  lineGroups[cl].push({
+    date: d.date,
+    avg,
+    max
+  });
+}
 
       // GLOBAL DAILY
-      if (type === "global_daily" && showGlobal) {
-        globalGroup.push({
-          date: d.date,
-          value: d.global_avg_momentum ?? d.avg_momentum ?? d.momentum ?? 0
-        });
-      }
-    });
+if (type === "global_daily" && showGlobal) {
+  const { avg, max } = pickMomentum(d);
+
+  globalGroup.push({
+    date: d.date,
+    avg,
+    max
+  });
+}
 
     // Build labels from the first available group
     const first =
@@ -380,6 +434,13 @@ $effect(() => {
             <label><input type="checkbox" bind:checked={showShips}>Show ships</label>
             <label><input type="checkbox" bind:checked={showCruiseLines}>Show cruise lines</label>
             <label><input type="checkbox" bind:checked={showGlobal}>Show global totals</label>
+            <label>Momentum Type
+            <select bind:value={momentumView}>
+              <option value="Average">Average momentum</option>
+              <option value="Max">Maximum momentum</option>
+              <option value="Average_and_Max">Averge momentum and Maximum momentum</option>
+            </select>
+          </label>
           {/if}
 
 <label>Filter
