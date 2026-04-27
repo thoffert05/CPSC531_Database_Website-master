@@ -187,251 +187,192 @@ function pickMomentum(d) {
     finally { chartLoading = false; }
   }
 function renderChart(data) {
-  if (!data.length) { 
-    chartError = 'No data returned.'; 
-    return; 
+  if (!data || !data.length) {
+    chartError = "No data returned.";
+    return;
   }
 
-  if (chartInst) { 
-    chartInst.destroy(); 
-    chartInst = null; 
+  if (chartInst) {
+    chartInst.destroy();
+    chartInst = null;
   }
 
   let labels = [];
   let datasets = [];
 
-  //===========================================================
-  // RAW VIEW
-  //===========================================================
-  if (chartView === 'raw') {
-
-    const grp = {};
+  // ============================================================
+  // RAW MODE
+  // ============================================================
+  if (chartView === "raw") {
+    const shipGroups = {};
 
     data.forEach(d => {
       const sh = d.ShipName || d.ship_name;
       if (!sh || !showShips) return;
 
-      const t = (d.BaseDateTime || '').slice(11, 19);
-      if (!grp[sh]) grp[sh] = {};
-      grp[sh][t] = d.momentum ?? null;
+      const t = (d.BaseDateTime || "").slice(11, 19);
+      if (!shipGroups[sh]) shipGroups[sh] = {};
+      shipGroups[sh][t] = d.momentum ?? null;
     });
 
-    labels = [...new Set(data.map(d => (d.BaseDateTime || '').slice(11, 19)))].sort();
+    labels = [...new Set(data.map(d => (d.BaseDateTime || "").slice(11, 19)))].sort();
 
-    datasets = Object.keys(grp).map(sh => ({
+    datasets = Object.keys(shipGroups).map(sh => ({
       label: sh,
-      data: labels.map(t => grp[sh][t] ?? null),
+      data: labels.map(t => shipGroups[sh][t] ?? null),
       borderColor: SHIP_COLORS[sh],
-      backgroundColor: 'rgba(0,0,0,0)',
+      backgroundColor: "rgba(0,0,0,0)",
       borderWidth: 2,
       pointRadius: 2,
       spanGaps: true
     }));
   }
 
-  //===========================================================
-  // SUMMARY VIEW
-  //===========================================================
+  // ============================================================
+  // SUMMARY MODE (DUPLICATED ROWS FOR AVG/MAX)
+  // ============================================================
   else {
-
     const shipGroups = {};
     const lineGroups = {};
     let globalGroup = [];
 
-    //---------------------------------------------------------
-    // GROUPING
-    //---------------------------------------------------------
+    // -----------------------------
+    // GROUP + DUPLICATE ROWS
+    // -----------------------------
     data.forEach(d => {
       const type = d.row_type;
 
+      // SHIP DAILY
       if (type === "ship_daily" && showShips) {
         const sh = d.ShipName;
         if (!shipGroups[sh]) shipGroups[sh] = [];
-        shipGroups[sh].push({
-          date: d.date,
-          avg: d.ship_avg_momentum,
-          max: d.ship_max_momentum
-        });
+
+        if (momentumView !== "Max") {
+          shipGroups[sh].push({
+            date: d.date,
+            label: `${sh} (Avg)`,
+            value: d.ship_avg_momentum
+          });
+        }
+        if (momentumView !== "Average") {
+          shipGroups[sh].push({
+            date: d.date,
+            label: `${sh} (Max)`,
+            value: d.ship_max_momentum
+          });
+        }
       }
 
+      // CRUISE LINE DAILY
       if (type === "cruiseline_daily" && showCruiseLines) {
         const cl = d.CruiseLine;
         if (!lineGroups[cl]) lineGroups[cl] = [];
-        lineGroups[cl].push({
-          date: d.date,
-          avg: d.cruiseline_avg_momentum,
-          max: d.cruiseline_max_momentum
-        });
+
+        if (momentumView !== "Max") {
+          lineGroups[cl].push({
+            date: d.date,
+            label: `${cl} (Avg)`,
+            value: d.cruiseline_avg_momentum
+          });
+        }
+        if (momentumView !== "Average") {
+          lineGroups[cl].push({
+            date: d.date,
+            label: `${cl} (Max)`,
+            value: d.cruiseline_max_momentum
+          });
+        }
       }
 
+      // GLOBAL DAILY
       if (type === "global_daily" && showGlobal) {
-        globalGroup.push({
-          date: d.date,
-          avg: d.global_avg_momentum,
-          max: d.global_max_momentum
-        });
+        if (momentumView !== "Max") {
+          globalGroup.push({
+            date: d.date,
+            label: "Global (Avg)",
+            value: d.global_avg_momentum
+          });
+        }
+        if (momentumView !== "Average") {
+          globalGroup.push({
+            date: d.date,
+            label: "Global (Max)",
+            value: d.global_max_momentum
+          });
+        }
       }
     });
 
-    //---------------------------------------------------------
-    // DEDUPE BY DATE (important for stability)
-    //---------------------------------------------------------
-    function dedupe(rows) {
-      const map = new Map();
-      rows.forEach(r => map.set(r.date, r));
-      return [...map.values()];
-    }
-
-    Object.keys(shipGroups).forEach(sh => {
-      shipGroups[sh] = dedupe(shipGroups[sh]);
-    });
-
-    Object.keys(lineGroups).forEach(cl => {
-      lineGroups[cl] = dedupe(lineGroups[cl]);
-    });
-
-    globalGroup = dedupe(globalGroup);
-
-    //---------------------------------------------------------
-    // UNIFIED LABELS ACROSS ALL GROUPS
-    //---------------------------------------------------------
+    // -----------------------------
+    // COLLECT ALL DATES
+    // -----------------------------
     const allDates = new Set();
 
     Object.values(shipGroups).forEach(rows =>
       rows.forEach(r => allDates.add(r.date))
     );
-
     Object.values(lineGroups).forEach(rows =>
       rows.forEach(r => allDates.add(r.date))
     );
-
     globalGroup.forEach(r => allDates.add(r.date));
 
     labels = [...allDates].sort();
 
-    //---------------------------------------------------------
-    // DATASETS
-    //---------------------------------------------------------
+    // -----------------------------
+    // BUILD DATASETS
+    // -----------------------------
+    const addDataset = (rows, colorMap, isGlobal = false) => {
+      const byLabel = {};
 
-    // SHIPS
+      rows.forEach(r => {
+        if (!byLabel[r.label]) byLabel[r.label] = [];
+        byLabel[r.label].push(r);
+      });
+
+      Object.keys(byLabel).forEach(label => {
+        const map = new Map(byLabel[label].map(r => [r.date, r.value]));
+
+        datasets.push({
+          label,
+          data: labels.map(d => map.get(d) ?? null),
+          borderColor: isGlobal ? "black" : colorMap[label.split(" (")[0]],
+          backgroundColor: "rgba(0,0,0,0)",
+          borderWidth: label.includes("(Max)") ? 4 : isGlobal ? 5 : 2,
+          pointRadius: 3,
+          spanGaps: true
+        });
+      });
+    };
+
+    // Ships
     Object.keys(shipGroups).forEach(sh => {
-      const rows = shipGroups[sh];
-      const map = new Map(rows.map(r => [r.date, r]));
-
-      if (momentumView !== "Max") {
-        datasets.push({
-          label: `${sh} (Avg)`,
-          data: labels.map(d => map.get(d)?.avg ?? null),
-          borderColor: SHIP_COLORS[sh],
-          backgroundColor: 'rgba(0,0,0,0)',
-          borderWidth: 2,
-          pointRadius: 3
-        });
-      }
-
-      if (momentumView !== "Average") {
-        datasets.push({
-          label: `${sh} (Max)`,
-          data: labels.map(d => map.get(d)?.max ?? null),
-          borderColor: SHIP_COLORS_DARK[sh],
-          backgroundColor: 'rgba(0,0,0,0)',
-          borderWidth: 2,
-          pointRadius: 3
-        });
-      }
+      addDataset(shipGroups[sh], SHIP_COLORS);
     });
 
-    // CRUISE LINES
+    // Cruise lines
     Object.keys(lineGroups).forEach(cl => {
-      const rows = lineGroups[cl];
-      const map = new Map(rows.map(r => [r.date, r]));
-
-      if (momentumView !== "Max") {
-        datasets.push({
-          label: `${cl} (Avg)`,
-          data: labels.map(d => map.get(d)?.avg ?? null),
-          borderColor: LINE_COLORS[cl],
-          backgroundColor: 'rgba(0,0,0,0)',
-          borderWidth: 2,
-          pointRadius: 3
-        });
-      }
-
-      if (momentumView !== "Average") {
-        datasets.push({
-          label: `${cl} (Max)`,
-          data: labels.map(d => map.get(d)?.max ?? null),
-          borderColor: LINE_COLORS_DARK[cl],
-          backgroundColor: 'rgba(0,0,0,0)',
-          borderWidth: 2,
-          pointRadius: 3
-        });
-      }
+      addDataset(lineGroups[cl], LINE_COLORS);
     });
 
-    // GLOBAL
-    if (globalGroup.length) {
-      const map = new Map(globalGroup.map(r => [r.date, r]));
-
-      if (momentumView !== "Max") {
-        datasets.push({
-          label: "Global (Avg)",
-          data: labels.map(d => map.get(d)?.avg ?? null),
-          borderColor: GLOBAL_COLOR,
-          backgroundColor: 'rgba(0,0,0,0)',
-          borderWidth: 3,
-          pointRadius: 4
-        });
-      }
-
-      if (momentumView !== "Average") {
-        datasets.push({
-          label: "Global (Max)",
-          data: labels.map(d => map.get(d)?.max ?? null),
-          borderColor: GLOBAL_COLOR_DARK,
-          backgroundColor: 'rgba(0,0,0,0)',
-          borderWidth: 3,
-          pointRadius: 4
-        });
-      }
-    }
+    // Global
+    addDataset(globalGroup, {}, true);
   }
 
-  //===========================================================
+  // ============================================================
   // BUILD CHART
-  //===========================================================
+  // ============================================================
   chartInst = new Chart(chartCanvas, {
-    type: 'line',
+    type: "line",
     data: { labels, datasets },
     options: {
       responsive: true,
       plugins: {
-        legend: { position: 'top', labels: { color: '#e8eaf0' } }
+        legend: { position: "top", labels: { color: "#e8eaf0" } }
       },
       scales: {
         x: {
-          ticks: { color: '#8890b0' },
-          grid: { color: '#1a2140' },
-          title: {
-            display: true,
-            text: chartView === 'raw' ? 'Time' : 'Date',
-            color: '#8890b0'
-          }
-        },
-        y: {
-          ticks: { color: '#8890b0' },
-          grid: { color: '#1a2140' },
-          title: {
-            display: true,
-            text: 'Momentum kg·m/s',
-            color: '#8890b0'
-          }
-        }
-      }
-    }
-  });
-}
-
+          ticks: { color: "#8890b0" },
+          grid: { color: "#
 
   // ── Derived
   const lines        = $derived(['All', ...[...new Set(ships.map(s=>s.CruiseLine).filter(Boolean))].sort()]);
