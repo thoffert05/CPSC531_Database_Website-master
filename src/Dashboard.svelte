@@ -98,8 +98,8 @@
       LINE_COLORS[name] = PALETTE_103[shipNames.length + i];
     });
   
-    // Global/day: index 102
-    GLOBAL_COLOR = PALETTE[shipNames.length + cruiseLines.length];
+    // Global line is always black
+    GLOBAL_COLOR = "black";
   }
   $effect(() => { if (chartFilter === 'Ship Name'  && !chartShip && shipNames.length) chartShip = shipNames[0]; });
   $effect(() => { if (chartFilter === 'Cruise Line' && !chartLine && lines.length > 1) chartLine = lines[1]; });
