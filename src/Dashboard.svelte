@@ -233,10 +233,10 @@
   
     // Determine visible ships and cruise lines
     const visibleShips = shipNames.filter(sh => shipVisibility[sh]);
-    const visibleLines = cruiseLines.filter(cl => cruiseLineVisibility[cl]);
+    const visibleLines = lines.slice(1);
   
     // Assign colors dynamically
-    assignColors(shipNames, cruiseLines, visibleShips, visibleLines);
+    assignColors(shipNames, lines.slice(1), visibleShips, visibleLines);
   
     const GLOBAL_COLOR = "black";
   
