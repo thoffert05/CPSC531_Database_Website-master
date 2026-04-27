@@ -87,20 +87,20 @@
   let chartInitialized = false;
   let momentumView = $state("Average_and_Max");
 
-function buildColorMaps(shipNames, cruiseLines) {
-  // Ships: 0–91
-  shipNames.forEach((name, i) => {
-    SHIP_COLORS[name] = PALETTE_103[i];
-  });
-
-  // Cruise lines: 92–101
-  cruiseLines.forEach((name, i) => {
-    LINE_COLORS[name] = PALETTE_103[shipNames.length + i];
-  });
-
-  // Global/day: index 102
-  GLOBAL_COLOR = PALETTE[shipNames.length + cruiseLines.length];
-}
+  function buildColorMaps(shipNames, cruiseLines) {
+    // Ships: 0–91
+    shipNames.forEach((name, i) => {
+      SHIP_COLORS[name] = PALETTE_103[i];
+    });
+  
+    // Cruise lines: 92–101
+    cruiseLines.forEach((name, i) => {
+      LINE_COLORS[name] = PALETTE_103[shipNames.length + i];
+    });
+  
+    // Global/day: index 102
+    GLOBAL_COLOR = PALETTE[shipNames.length + cruiseLines.length];
+  }
   $effect(() => { if (chartFilter === 'Ship Name'  && !chartShip && shipNames.length) chartShip = shipNames[0]; });
   $effect(() => { if (chartFilter === 'Cruise Line' && !chartLine && lines.length > 1) chartLine = lines[1]; });
 
