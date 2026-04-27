@@ -104,7 +104,7 @@ function buildColorMaps(shipNames, cruiseLines) {
   $effect(() => { if (chartFilter === 'Ship Name'  && !chartShip && shipNames.length) chartShip = shipNames[0]; });
   $effect(() => { if (chartFilter === 'Cruise Line' && !chartLine && lines.length > 1) chartLine = lines[1]; });
 
-  const lc  = (l) => { const i = lines.indexOf(l); return i > 0 ? PALETTE[(i-1) % PALETTE.length] : '#4a5880'; };
+  const lc  = (l) => { const i = lines.indexOf(l); return i > 0 ? PALETTE_103[(i-1) % PALETTE_103.length] : '#4a5880'; };
   const dot = (l, s=8) => `background:${lc(l)};width:${s}px;height:${s}px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0`;
   const sum = (a, k) => a.reduce((t, x) => t + (x[k]||0), 0);
   const cmp = (dir, key) => (a, b) => typeof a[key]==='string' ? dir*a[key].localeCompare(b[key]||'') : dir*((a[key]||0)-(b[key]||0));
@@ -186,13 +186,7 @@ function buildColorMaps(shipNames, cruiseLines) {
       )
     };
   }
-  function assignColors(shipNames, cruiseLines, visibleShips, visibleLines) {
-    const ACTIVE = getActivePalette(
-      visibleShips.length,
-      visibleLines.length,
-      shipNames.length,
-      cruiseLines.length
-    );
+  
   
     const SHIP_COLORS = {};
     const LINE_COLORS = {};
