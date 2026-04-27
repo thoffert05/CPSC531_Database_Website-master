@@ -90,12 +90,12 @@
 function buildColorMaps(shipNames, cruiseLines) {
   // Ships: 0–91
   shipNames.forEach((name, i) => {
-    SHIP_COLORS[name] = PALETTE[i];
+    SHIP_COLORS[name] = PALETTE_103[i];
   });
 
   // Cruise lines: 92–101
   cruiseLines.forEach((name, i) => {
-    LINE_COLORS[name] = PALETTE[shipNames.length + i];
+    LINE_COLORS[name] = PALETTE_103[shipNames.length + i];
   });
 
   // Global/day: index 102
