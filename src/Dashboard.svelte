@@ -242,7 +242,39 @@
   
     let labels = [];
     let datasets = [];
-  
+    // ============================================================
+    // RAW MODE (minute-by-minute momentum)
+    // ============================================================
+    if (chartView === "raw") {
+        const shipGroups = {};
+    
+        data.forEach(d => {
+          const sh = d.ShipName;
+          if (!shipGroups[sh]) shipGroups[sh] = [];
+    
+          shipGroups[sh].push({
+            date: d.BaseDateTime,
+            label: sh,
+            value: d.momentum
+          });
+        });
+    
+        const allTimes = new Set();
+        Object.values(shipGroups).forEach(rows => rows.forEach(r => allTimes.add(r.date)));
+        labels = [...allTimes].sort();
+    
+        Object.keys(shipGroups).forEach(sh => {
+          addDataset(shipGroups[sh], SHIP_COLORS);
+        });
+    
+        chartInst = new Chart(chartCanvas, {
+          type: "line",
+          data: { labels, datasets },
+          options: { /* same as summary */ }
+        });
+    
+        return;  
+    }
     // ============================================================
     // SUMMARY MODE (DUPLICATED ROWS)
     // ============================================================
