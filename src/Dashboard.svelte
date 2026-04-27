@@ -6,7 +6,7 @@
 
   const API = '/api';
   // Full 103-color palette (your existing one)
-const PALETTE_103 = [
+  const PALETTE_103 = [
   "hsl(0,65%,50%)","hsl(3.4951456310679615,65%,50%)","hsl(6.990291262135923,65%,50%)",
   "hsl(10.485436893203883,65%,50%)","hsl(13.980582524271844,65%,50%)","hsl(17.475728155339806,65%,50%)",
   "hsl(20.970873786407767,65%,50%)","hsl(24.46601941747573,65%,50%)","hsl(27.96116504854369,65%,50%)",
@@ -73,7 +73,7 @@ const PALETTE_103 = [
   let lineSortKey = $state('totalPax'), lineSortDir = $state(-1);
   let selectedShip = $state(null), activeTab = $state('fleet'), groupBy = $state('Ship');
  
-  let chartView = $state('raw'), chartFilter = $state('None');
+  let chartView = $state('summary'), chartFilter = $state('None');
   let chartDate = $state('2019-05-09'), chartStart = $state('2019-01-01'), chartEnd = $state('2019-12-31');
   let chartShip = $state(''), chartLine = $state('');
   let chartLoading = $state(false), chartError = $state(''), chartCanvas = $state(null);
