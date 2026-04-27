@@ -202,20 +202,37 @@
       LINE_COLORS[cl] = ACTIVE[(i + 10) % ACTIVE.length];
     });
   }
-  // ── AIS Chart
-  async function updateChart() {
-    if (!chartCanvas) return;
-    chartLoading = true; chartError = '';
-    try {
-      const base = chartView === 'raw'
-        ? `${API}/raw?date=${chartDate}`
-        : `${API}/summary?start=${chartStart}&end=${chartEnd}`;
-      const filter = chartFilter === 'Ship Name' && chartShip   ? `&ship_name=${encodeURIComponent(chartShip)}`
-                   : chartFilter === 'Cruise Line' && chartLine ? `&cruise_line=${encodeURIComponent(chartLine)}`
-                   : '';
-      const res = await fetch(base + filter);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+  // ── AIS Chartasync 
+  function updateChart() {
+      if (!chartCanvas) return;
+      chartLoading = true;
+      chartError = '';
+    
+      try {
+        const base = chartView === 'raw'
+          ? `${API}/raw?date=${chartDate}`
+          : `${API}/summary?start=${chartStart}&end=${chartEnd}`;
+    
+        const filter =
+          chartFilter === 'Ship Name' && chartShip
+            ? `&ship_name=${encodeURIComponent(chartShip)}`
+            : chartFilter === 'Cruise Line' && chartLine
+            ? `&cruise_line=${encodeURIComponent(chartLine)}`
+            : '';
+    
+        const res = await fetch(base + filter);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+        const data = await res.json();
+    
+        // IMPORTANT: call the real renderChart here
+        renderChart(Array.isArray(data) ? data : Object.values(data).flat());
+      } catch (e) {
+        chartError = String(e);
+      } finally {
+        chartLoading = false;
+      }
+    }
       function renderChart(data) {
         if (!data || !data.length) {
           chartError = "No data returned.";
