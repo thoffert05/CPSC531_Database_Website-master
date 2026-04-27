@@ -64,7 +64,8 @@
 
   const SHIP_COLS = [['Ship Name','Ship Name'],['CruiseLine','Line'],['YearBuilt','Built'],['GT','GT'],['PassengerCapacity','Pax'],['CrewCount','Crew'],['DWT','DWT']];
   const LINE_COLS = [['CruiseLine','Cruise Line'],['shipCount','Ships'],['totalPax','Total Pax'],['totalCrew','Crew'],['avgYear','Avg Built'],['totalDWT','Total DWT']];
-
+  let shipNames = [];
+  let cruiseLines = [];
   let ships = $state([]), search = $state(''), selectedLine = $state('All');
   let cruise_lines=$state([]);
   let selectedCruiseLine = $state('All');
