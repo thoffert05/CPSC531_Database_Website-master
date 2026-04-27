@@ -242,12 +242,7 @@
     const visibleLines = cruiseLines.filter(cl => cruiseLineVisibility[cl]);
   
     // Assign colors dynamically
-    const { SHIP_COLORS, LINE_COLORS } = assignColors(
-      shipNames,
-      cruiseLines,
-      visibleShips,
-      visibleLines
-    );
+    assignColors(shipNames, cruiseLines, visibleShips, visibleLines);
   
     const GLOBAL_COLOR = "black";
   
