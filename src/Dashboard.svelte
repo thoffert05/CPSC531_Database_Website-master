@@ -203,6 +203,25 @@ function buildColorMaps(shipNames, cruiseLines) {
   
     return { SHIP_COLORS, LINE_COLORS };
   }
+  function assignColors(shipNames, cruiseLines, visibleShips, visibleLines) {
+    const ACTIVE = getActivePalette(
+      visibleShips.length,
+      visibleLines.length,
+      shipNames.length,
+      cruiseLines.length
+    );
+  
+    SHIP_COLORS = {};
+    LINE_COLORS = {};
+  
+    shipNames.forEach((sh, i) => {
+      SHIP_COLORS[sh] = ACTIVE[i % ACTIVE.length];
+    });
+  
+    cruiseLines.forEach((cl, i) => {
+      LINE_COLORS[cl] = ACTIVE[(i + 10) % ACTIVE.length];
+    });
+  }
   // ── AIS Chart
   async function updateChart() {
     if (!chartCanvas) return;
