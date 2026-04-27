@@ -188,8 +188,7 @@
   }
   
   
-    const SHIP_COLORS = {};
-    const LINE_COLORS = {};
+
   
     // Ships get first N colors
     shipNames.forEach((sh, i) => {
