@@ -267,14 +267,8 @@
           addDataset(shipGroups[sh], SHIP_COLORS);
         });
     
-        chartInst = new Chart(chartCanvas, {
-          type: "line",
-          data: { labels, datasets },
-          options: { /* same as summary */ }
-        });
-    
-        return;  
-    }
+
+    }else{
     // ============================================================
     // SUMMARY MODE (DUPLICATED ROWS)
     // ============================================================
@@ -381,7 +375,7 @@
     Object.keys(shipGroups).forEach(sh => addDataset(shipGroups[sh], SHIP_COLORS));
     Object.keys(lineGroups).forEach(cl => addDataset(lineGroups[cl], LINE_COLORS));
     addDataset(globalGroup, {}, true);
-  
+    }  
     // Build chart
     chartInst = new Chart(chartCanvas, {
       type: "line",
