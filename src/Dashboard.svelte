@@ -216,198 +216,218 @@
       const res = await fetch(base + filter);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      renderChart(Array.isArray(data) ? data : Object.values(data).flat());
-    } catch(e) { chartError = String(e); }
-    finally { chartLoading = false; }
-  }
-  function renderChart(data) {
-    if (!data || !data.length) {
-      chartError = "No data returned.";
-      return;
-    }
-  
-    if (chartInst) {
-      chartInst.destroy();
-      chartInst = null;
-    }
-  
-    // Determine visible ships and cruise lines
-    const visibleShips = shipNames.filter(sh => shipVisibility[sh]);
-    const visibleLines = lines.slice(1);
-  
-    // Assign colors dynamically
-    assignColors(shipNames, lines.slice(1), visibleShips, visibleLines);
-  
-    const GLOBAL_COLOR = "black";
-  
-    let labels = [];
-    let datasets = [];
-    // ============================================================
-    // RAW MODE (minute-by-minute momentum)
-    // ============================================================
-    if (chartView === "raw") {
-        const shipGroups = {};
-    
-        data.forEach(d => {
-          const sh = d.ShipName;
-          if (!shipGroups[sh]) shipGroups[sh] = [];
-    
-          shipGroups[sh].push({
-            date: d.BaseDateTime,
-            label: sh,
-            value: d.momentum
-          });
-        });
-    
-        const allTimes = new Set();
-        Object.values(shipGroups).forEach(rows => rows.forEach(r => allTimes.add(r.date)));
-        labels = [...allTimes].sort();
-    
-        Object.keys(shipGroups).forEach(sh => {
-          addDataset(shipGroups[sh], SHIP_COLORS);
-        });
-    
-
-    }else{
-    // ============================================================
-    // SUMMARY MODE (DUPLICATED ROWS)
-    // ============================================================
-    const shipGroups = {};
-    const lineGroups = {};
-    let globalGroup = [];
-  
-    data.forEach(d => {
-      const type = d.row_type;
-  
-      // SHIP DAILY
-      if (type === "ship_daily" && showShips) {
-        const sh = d.ShipName;
-        if (!shipGroups[sh]) shipGroups[sh] = [];
-  
-        if (momentumView !== "Max") {
-          shipGroups[sh].push({
-            date: d.date,
-            label: `${sh} (Avg)`,
-            value: d.ship_avg_momentum
-          });
+      function renderChart(data) {
+        if (!data || !data.length) {
+          chartError = "No data returned.";
+          return;
         }
-        if (momentumView !== "Average") {
-          shipGroups[sh].push({
-            date: d.date,
-            label: `${sh} (Max)`,
-            value: d.ship_max_momentum
-          });
+      
+        if (chartInst) {
+          chartInst.destroy();
+          chartInst = null;
         }
-      }
-  
-      // CRUISE LINE DAILY
-      if (type === "cruiseline_daily" && showCruiseLines) {
-        const cl = d.CruiseLine;
-        if (!lineGroups[cl]) lineGroups[cl] = [];
-  
-        if (momentumView !== "Max") {
-          lineGroups[cl].push({
-            date: d.date,
-            label: `${cl} (Avg)`,
-            value: d.cruiseline_avg_momentum
+      
+        // Determine visible ships and cruise lines
+        const visibleShips = shipNames.filter(sh => shipVisibility[sh] !== false);
+        const visibleLines = lines.slice(1);
+      
+        // Assign colors dynamically
+        assignColors(shipNames, lines.slice(1), visibleShips, visibleLines);
+      
+        const GLOBAL_COLOR = "black";
+      
+        let labels = [];
+        let datasets = [];
+      
+        // ============================================================
+        // SHARED DATASET BUILDER (RAW + SUMMARY)
+        // ============================================================
+        const addDataset = (rows, colorMap, isGlobal = false) => {
+          const byLabel = {};
+      
+          rows.forEach(r => {
+            if (!byLabel[r.label]) byLabel[r.label] = [];
+            byLabel[r.label].push(r);
           });
-        }
-        if (momentumView !== "Average") {
-          lineGroups[cl].push({
-            date: d.date,
-            label: `${cl} (Max)`,
-            value: d.cruiseline_max_momentum
+      
+          Object.keys(byLabel).forEach(label => {
+            const map = new Map(byLabel[label].map(r => [r.date, r.value]));
+      
+            datasets.push({
+              label,
+              data: labels.map(d => map.get(d) ?? null),
+              borderColor: isGlobal ? GLOBAL_COLOR : colorMap[label.split(" (")[0]],
+              backgroundColor: "rgba(0,0,0,0)",
+              borderWidth: isGlobal ? 5 : label.includes("(Max)") ? 4 : 2,
+              pointRadius: 3,
+              spanGaps: true
+            });
           });
-        }
-      }
-  
-      // GLOBAL DAILY — ALWAYS INCLUDED IF showGlobal = true
-      if (type === "global_daily" && showGlobal) {
-        if (momentumView !== "Max") {
-          globalGroup.push({
-            date: d.date,
-            label: "Global (Avg)",
-            value: d.global_avg_momentum
+        };
+      
+        // ============================================================
+        // RAW MODE (minute-by-minute momentum)
+        // ============================================================
+        if (chartView === "raw") {
+          const shipGroups = {};
+      
+          data.forEach(d => {
+            const sh = d.ShipName;
+            if (!shipGroups[sh]) shipGroups[sh] = [];
+      
+            shipGroups[sh].push({
+              date: d.BaseDateTime,   // minute-by-minute timestamp
+              label: sh,
+              value: d.momentum       // RAW momentum
+            });
           });
-        }
-        if (momentumView !== "Average") {
-          globalGroup.push({
-            date: d.date,
-            label: "Global (Max)",
-            value: d.global_max_momentum
+      
+          // Collect timestamps
+          const allTimes = new Set();
+          Object.values(shipGroups).forEach(rows => rows.forEach(r => allTimes.add(r.date)));
+          labels = [...allTimes].sort();
+      
+          // Build datasets
+          Object.keys(shipGroups).forEach(sh => {
+            addDataset(shipGroups[sh], SHIP_COLORS);
           });
-        }
-      }
-    });
-  
-    // Collect all dates
-    const allDates = new Set();
-    Object.values(shipGroups).forEach(rows => rows.forEach(r => allDates.add(r.date)));
-    Object.values(lineGroups).forEach(rows => rows.forEach(r => allDates.add(r.date)));
-    globalGroup.forEach(r => allDates.add(r.date));
-  
-    labels = [...allDates].sort();
-  
-    // Build datasets
-    const addDataset = (rows, colorMap, isGlobal = false) => {
-      const byLabel = {};
-  
-      rows.forEach(r => {
-        if (!byLabel[r.label]) byLabel[r.label] = [];
-        byLabel[r.label].push(r);
-      });
-  
-      Object.keys(byLabel).forEach(label => {
-        const map = new Map(byLabel[label].map(r => [r.date, r.value]));
-  
-        datasets.push({
-          label,
-          data: labels.map(d => map.get(d) ?? null),
-          borderColor: isGlobal ? GLOBAL_COLOR : colorMap[label.split(" (")[0]],
-          backgroundColor: "rgba(0,0,0,0)",
-          borderWidth: isGlobal ? 5 : label.includes("(Max)") ? 4 : 2,
-          pointRadius: 3,
-          spanGaps: true
-        });
-      });
-    };
-  
-    Object.keys(shipGroups).forEach(sh => addDataset(shipGroups[sh], SHIP_COLORS));
-    Object.keys(lineGroups).forEach(cl => addDataset(lineGroups[cl], LINE_COLORS));
-    addDataset(globalGroup, {}, true);
-    }  
-    // Build chart
-    chartInst = new Chart(chartCanvas, {
-      type: "line",
-      data: { labels, datasets },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: "top", labels: { color: "#e8eaf0" } }
-        },
-        scales: {
-          x: {
-            ticks: { color: "#8890b0" },
-            grid: { color: "#1a2140" },
-            title: {
-              display: true,
-              text: "Date",
-              color: "#8890b0"
+      
+          // Build chart
+          chartInst = new Chart(chartCanvas, {
+            type: "line",
+            data: { labels, datasets },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { position: "top", labels: { color: "#e8eaf0" } }
+              },
+              scales: {
+                x: {
+                  ticks: { color: "#8890b0" },
+                  grid: { color: "#1a2140" },
+                  title: { display: true, text: "Time", color: "#8890b0" }
+                },
+                y: {
+                  ticks: { color: "#8890b0" },
+                  grid: { color: "#1a2140" },
+                  title: { display: true, text: "Momentum kg·m/s", color: "#8890b0" }
+                }
+              }
             }
-          },
-          y: {
-            ticks: { color: "#8890b0" },
-            grid: { color: "#1a2140" },
-            title: {
-              display: true,
-              text: "Momentum kg·m/s",
-              color: "#8890b0"
+          });
+      
+          return; // IMPORTANT: prevents summary logic from running
+        }
+      
+        // ============================================================
+        // SUMMARY MODE (daily aggregated rows)
+        // ============================================================
+        const shipGroups = {};
+        const lineGroups = {};
+        let globalGroup = [];
+      
+        data.forEach(d => {
+          const type = d.row_type;
+      
+          // SHIP DAILY
+          if (type === "ship_daily" && showShips) {
+            const sh = d.ShipName;
+            if (!shipGroups[sh]) shipGroups[sh] = [];
+      
+            if (momentumView !== "Max") {
+              shipGroups[sh].push({
+                date: d.date,
+                label: `${sh} (Avg)`,
+                value: d.ship_avg_momentum
+              });
+            }
+            if (momentumView !== "Average") {
+              shipGroups[sh].push({
+                date: d.date,
+                label: `${sh} (Max)`,
+                value: d.ship_max_momentum
+              });
             }
           }
-        }
+      
+          // CRUISE LINE DAILY
+          if (type === "cruiseline_daily" && showCruiseLines) {
+            const cl = d.CruiseLine;
+            if (!lineGroups[cl]) lineGroups[cl] = [];
+      
+            if (momentumView !== "Max") {
+              lineGroups[cl].push({
+                date: d.date,
+                label: `${cl} (Avg)`,
+                value: d.cruiseline_avg_momentum
+              });
+            }
+            if (momentumView !== "Average") {
+              lineGroups[cl].push({
+                date: d.date,
+                label: `${cl} (Max)`,
+                value: d.cruiseline_max_momentum
+              });
+            }
+          }
+      
+          // GLOBAL DAILY
+          if (type === "global_daily" && showGlobal) {
+            if (momentumView !== "Max") {
+              globalGroup.push({
+                date: d.date,
+                label: "Global (Avg)",
+                value: d.global_avg_momentum
+              });
+            }
+            if (momentumView !== "Average") {
+              globalGroup.push({
+                date: d.date,
+                label: "Global (Max)",
+                value: d.global_max_momentum
+              });
+            }
+          }
+        });
+      
+        // Collect all dates
+        const allDates = new Set();
+        Object.values(shipGroups).forEach(rows => rows.forEach(r => allDates.add(r.date)));
+        Object.values(lineGroups).forEach(rows => rows.forEach(r => allDates.add(r.date)));
+        globalGroup.forEach(r => allDates.add(r.date));
+      
+        labels = [...allDates].sort();
+      
+        // Build datasets
+        Object.keys(shipGroups).forEach(sh => addDataset(shipGroups[sh], SHIP_COLORS));
+        Object.keys(lineGroups).forEach(cl => addDataset(lineGroups[cl], LINE_COLORS));
+        addDataset(globalGroup, {}, true);
+      
+        // Build chart
+        chartInst = new Chart(chartCanvas, {
+          type: "line",
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: "top", labels: { color: "#e8eaf0" } }
+            },
+            scales: {
+              x: {
+                ticks: { color: "#8890b0" },
+                grid: { color: "#1a2140" },
+                title: { display: true, text: "Date", color: "#8890b0" }
+              },
+              y: {
+                ticks: { color: "#8890b0" },
+                grid: { color: "#1a2140" },
+                title: { display: true, text: "Momentum kg·m/s", color: "#8890b0" }
+              }
+            }
+          }
+        });
       }
-    });
-  }
+
   // ── Derived
   const lines        = $derived(['All', ...[...new Set(ships.map(s=>s.CruiseLine).filter(Boolean))].sort()]);
   const shipNames    = $derived([...new Set(ships.map(s=>s['Ship Name']).filter(Boolean))].sort());
