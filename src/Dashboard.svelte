@@ -64,8 +64,7 @@
 
   const SHIP_COLS = [['Ship Name','Ship Name'],['CruiseLine','Line'],['YearBuilt','Built'],['GT','GT'],['PassengerCapacity','Pax'],['CrewCount','Crew'],['DWT','DWT']];
   const LINE_COLS = [['CruiseLine','Cruise Line'],['shipCount','Ships'],['totalPax','Total Pax'],['totalCrew','Crew'],['avgYear','Avg Built'],['totalDWT','Total DWT']];
-  let shipNames = [];
-  let cruiseLines = [];
+
   let ships = $state([]), search = $state(''), selectedLine = $state('All');
   let cruise_lines=$state([]);
   let selectedCruiseLine = $state('All');
@@ -128,19 +127,12 @@
     }));
 
   });
-  onMount(async () => {
-    const shipList = await (await fetch(`${API}/ship`)).json();
-  
-    // Filter out the header row
-    const cleanShips = shipList.filter(s => s.ShipName && s.ShipName !== 'Ship Name');
-  
-    // Extract unique ship names
-    const shipNames = cleanShips.map(s => s.ShipName);
-  
-    // Extract unique cruise lines
-    const cruiseLines = [...new Set(cleanShips.map(s => s.CruiseLine))];
-  
-    buildColorMaps(shipNames, cruiseLines);
+  $effect(() => {
+    if (ships.length > 0) {
+      const shipNamesList = [...new Set(ships.map(s => s["Ship Name"]))];
+      const cruiseLinesList = [...new Set(ships.map(s => s.CruiseLine))];
+      buildColorMaps(shipNamesList, cruiseLinesList);
+    }
   });
   function pickMomentum(d) {
     if (momentumView === "Average") {
