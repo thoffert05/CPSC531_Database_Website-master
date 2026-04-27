@@ -372,7 +372,26 @@ function renderChart(data) {
       scales: {
         x: {
           ticks: { color: "#8890b0" },
-          grid: { color: "#
+          grid: { color: "#1a2140" },
+          title: {
+            display: true,
+            text: chartView === "raw" ? "Time" : "Date",
+            color: "#8890b0"
+          }
+        },
+        y: {
+          ticks: { color: "#8890b0" },
+          grid: { color: "#1a2140" },
+          title: {
+            display: true,
+            text: "Momentum kg·m/s",
+            color: "#8890b0"
+          }
+        }
+      }
+    }
+  });
+}
 
   // ── Derived
   const lines        = $derived(['All', ...[...new Set(ships.map(s=>s.CruiseLine).filter(Boolean))].sort()]);
