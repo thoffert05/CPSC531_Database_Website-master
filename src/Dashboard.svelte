@@ -202,8 +202,8 @@
       LINE_COLORS[cl] = ACTIVE[(i + 10) % ACTIVE.length];
     });
   }
-  // ── AIS Chartasync 
-  function updateChart() {
+  // ── AIS Chart
+  async function updateChart() {
       if (!chartCanvas) return;
       chartLoading = true;
       chartError = '';
