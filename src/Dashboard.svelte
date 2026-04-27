@@ -104,15 +104,7 @@
   }
   $effect(() => { if (chartFilter === 'Ship Name'  && !chartShip && shipNames.length) chartShip = shipNames[0]; });
   $effect(() => { if (chartFilter === 'Cruise Line' && !chartLine && lines.length > 1) chartLine = lines[1]; });
-  $effect(() => {
-    shipNames.forEach(sh => {
-        if (shipVisibility[sh] === undefined) shipVisibility[sh] = true;
-      });
-    
-      cruiseLines.forEach(cl => {
-        if (cruiseLineVisibility[cl] === undefined) cruiseLineVisibility[cl] = true;
-      });
-  });
+
   const lc  = (l) => { const i = lines.indexOf(l); return i > 0 ? PALETTE_103[(i-1) % PALETTE_103.length] : '#4a5880'; };
   const dot = (l, s=8) => `background:${lc(l)};width:${s}px;height:${s}px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0`;
   const sum = (a, k) => a.reduce((t, x) => t + (x[k]||0), 0);
