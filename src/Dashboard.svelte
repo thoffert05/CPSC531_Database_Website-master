@@ -444,7 +444,7 @@
           }
         });
       }
-  }
+  
   // ── Derived
   const lines        = $derived(['All', ...[...new Set(ships.map(s=>s.CruiseLine).filter(Boolean))].sort()]);
   const shipNames    = $derived([...new Set(ships.map(s=>s['Ship Name']).filter(Boolean))].sort());
