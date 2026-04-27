@@ -72,7 +72,8 @@
   let sortKey = $state('PassengerCapacity'), sortDir = $state(-1);
   let lineSortKey = $state('totalPax'), lineSortDir = $state(-1);
   let selectedShip = $state(null), activeTab = $state('fleet'), groupBy = $state('Ship');
- 
+  let shipVisibility = {};
+  let cruiseLineVisibility = {};
   let chartView = $state('summary'), chartFilter = $state('None');
   let chartDate = $state('2019-05-09'), chartStart = $state('2019-01-01'), chartEnd = $state('2019-12-31');
   let chartShip = $state(''), chartLine = $state('');
@@ -103,7 +104,15 @@
   }
   $effect(() => { if (chartFilter === 'Ship Name'  && !chartShip && shipNames.length) chartShip = shipNames[0]; });
   $effect(() => { if (chartFilter === 'Cruise Line' && !chartLine && lines.length > 1) chartLine = lines[1]; });
-
+  $effect(() => {
+    shipNames.forEach(sh => {
+        if (shipVisibility[sh] === undefined) shipVisibility[sh] = true;
+      });
+    
+      cruiseLines.forEach(cl => {
+        if (cruiseLineVisibility[cl] === undefined) cruiseLineVisibility[cl] = true;
+      });
+  });
   const lc  = (l) => { const i = lines.indexOf(l); return i > 0 ? PALETTE_103[(i-1) % PALETTE_103.length] : '#4a5880'; };
   const dot = (l, s=8) => `background:${lc(l)};width:${s}px;height:${s}px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0`;
   const sum = (a, k) => a.reduce((t, x) => t + (x[k]||0), 0);
