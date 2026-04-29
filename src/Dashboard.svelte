@@ -99,8 +99,8 @@
       LINE_COLORS[name] = PALETTE_103[shipNames.length + i];
     });
   
-    // Global line is always black
-    GLOBAL_COLOR = "black";
+    // Global line is always white
+    GLOBAL_COLOR = "white";
   }
   $effect(() => { if (chartFilter === 'Ship Name'  && !chartShip && shipNames.length) chartShip = shipNames[0]; });
   $effect(() => { if (chartFilter === 'Cruise Line' && !chartLine && lines.length > 1) chartLine = lines[1]; });
@@ -251,7 +251,7 @@
         // Assign colors dynamically
         assignColors(shipNames, lines.slice(1), visibleShips, visibleLines);
       
-        const GLOBAL_COLOR = "black";
+        const GLOBAL_COLOR = "white";
       
         let labels = [];
         let datasets = [];
