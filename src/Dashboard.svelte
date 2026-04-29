@@ -45,14 +45,36 @@
   ];
 
   // 21-color evenly spaced palette (20 ships + 1 cruise line)
-  const PALETTE_21 = Array.from({ length: 21 }, (_, i) => {
-    const hue = (360 / 21) * i;
-    return `hsl(${hue}, 65%, 50%)`;
-  });
+  const PALETTE_21 = [
+  "#e6194b", // strong red
+  "#3cb44b", // bright green
+  "#4363d8", // vivid blue
+  "#f58231", // orange
+  "#911eb4", // purple
+  "#46f0f0", // cyan
+  "#f032e6", // magenta
+  "#bcf60c", // lime
+  "#fabebe", // light pink
+  "#008080", // teal
+  "#e6beff", // lavender
+  "#9a6324", // brown
+  "#ffe119", // bright yellow
+  "#aaffc3", // mint
+  "#808000", // olive
+  "#ffd8b1", // peach
+  "#800000", // deep maroon
+  "#000075", // deep navy (not black)
+  "#808080", // medium gray (not white/black)
+  "#f0e442", // golden yellow
+  "#4daf4a"  // forest green
+];
   function getActivePalette(visibleShips, visibleLines, totalShips, totalLines) {
     const allShipsVisible = visibleShips === totalShips;
     const allLinesVisible = visibleLines === totalLines;
-  
+
+    // Global line is always white
+    GLOBAL_COLOR = "white";
+
     // If everything is visible → use full palette
     if (allShipsVisible && allLinesVisible) {
       return PALETTE_103;
