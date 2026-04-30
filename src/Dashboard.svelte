@@ -268,7 +268,7 @@
       
         // Determine visible ships and cruise lines
         const visibleShips = shipNames.filter(sh => shipVisibility[sh] !== false);
-        const visibleLines = lines.slice(1);
+        const visibleLines = lines.slice(1).filter(cl => cruiseLineVisibility[cl] !== false);
       
         // Assign colors dynamically
         assignColors(shipNames, lines.slice(1), visibleShips, visibleLines);
