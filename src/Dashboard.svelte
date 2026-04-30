@@ -160,7 +160,7 @@
     }));
 
   });
-  $effect(() => {
+$effect(() => {
     if (ships.length > 0) {
       const shipNamesList = [...new Set(ships.map(s => s["Ship Name"]))];
       const cruiseLinesList = [...new Set(ships.map(s => s.CruiseLine))];
