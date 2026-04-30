@@ -83,15 +83,15 @@ function getActivePalette(visibleShips, visibleLines, totalShips, totalLines) {
   return PALETTE_21;
 }
 
-  const SHIP_COLS = [['Ship Name','Ship Name'],['CruiseLine','Line'],['YearBuilt','Built'],['GT','GT'],['PassengerCapacity','Pax'],['CrewCount','Crew'],['DWT','DWT']];
-  const LINE_COLS = [['CruiseLine','Cruise Line'],['shipCount','Ships'],['totalPax','Total Pax'],['totalCrew','Crew'],['avgYear','Avg Built'],['totalDWT','Total DWT']];
+  const SHIP_COLS = [['Ship Name','Ship Name'],['CruiseLine','Line'],['YearBuilt','Built'],['GT','GT'],['PassengerCapacity','passengers'],['CrewCount','Crew'],['DWT','DWT']];
+  const LINE_COLS = [['CruiseLine','Cruise Line'],['shipCount','Ships'],['totalpassengers','Total passengers'],['totalCrew','Crew'],['avgYear','Avg Built'],['totalDWT','Total DWT']];
 
   let ships = $state([]), search = $state(''), selectedLine = $state('All');
   let cruise_lines=$state([]);
   let selectedCruiseLine = $state('All');
   let cruiseLineSearch = $state('');
   let sortKey = $state('PassengerCapacity'), sortDir = $state(-1);
-  let lineSortKey = $state('totalPax'), lineSortDir = $state(-1);
+  let lineSortKey = $state('totalpassengers'), lineSortDir = $state(-1);
   let selectedShip = $state(null), activeTab = $state('fleet'), groupBy = $state('Ship');
   let shipVisibility = {};
   let cruiseLineVisibility = {};
@@ -486,19 +486,19 @@ $effect(() => {
   const filtered     = $derived([...baseFiltered].sort(cmp(sortDir, sortKey)));
   const lineGroups   = $derived.by(() =>
     Object.values(baseFiltered.reduce((g, s) => {
-      const r = g[s.CruiseLine] ??= { CruiseLine:s.CruiseLine, shipCount:0, totalPax:0, totalCrew:0, totalYear:0, totalDWT:0 };
-      r.shipCount++; r.totalPax+=s.PassengerCapacity; r.totalCrew+=s.CrewCount; r.totalYear+=s.YearBuilt; r.totalDWT+=s.DWT;
+      const r = g[s.CruiseLine] ??= { CruiseLine:s.CruiseLine, shipCount:0, totalpassengers:0, totalCrew:0, totalYear:0, totalDWT:0 };
+      r.shipCount++; r.totalpassengers+=s.PassengerCapacity; r.totalCrew+=s.CrewCount; r.totalYear+=s.YearBuilt; r.totalDWT+=s.DWT;
       return g;
     }, {})).map(r => ({...r, avgYear:Math.round(r.totalYear/r.shipCount)})).sort(cmp(lineSortDir, lineSortKey))
   );
   const st = $derived(filtered.length ? {
-    total: filtered.length, pax: sum(filtered,'PassengerCapacity').toLocaleString(),
+    total: filtered.length, passengers: sum(filtered,'PassengerCapacity').toLocaleString(),
     crew: sum(filtered,'CrewCount').toLocaleString(), year: Math.round(sum(filtered,'YearBuilt')/filtered.length),
     ratio: (sum(filtered,'PassengerCapacity')/sum(filtered,'CrewCount')).toFixed(1),
     big: filtered.reduce((a, b) => (a.GT || 0) > (b.GT || 0) ? a : b)
   } : null);
   const byLine   = $derived(Object.entries(baseFiltered.reduce((a,s)=>(a[s.CruiseLine]=(a[s.CruiseLine]||0)+s.PassengerCapacity,a),{})).sort((a,b)=>b[1]-a[1]).slice(0,10));
-  const maxPax   = $derived(byLine[0]?.[1]||1);
+  const maxpassengers   = $derived(byLine[0]?.[1]||1);
   const byDecade = $derived(Object.entries(baseFiltered.reduce((a,s)=>{const d=Math.floor(s.YearBuilt/10)*10;a[d]=(a[d]||0)+1;return a;},{})).sort((a,b)=>a[0]-b[0]).map(([d,n])=>[d+'s',n]));
   const maxDec   = $derived(Math.max(...byDecade.map(([,v])=>v),1));
   // Auto-run when switching to AIS tab
@@ -578,7 +578,7 @@ $effect(() => {
 
       {#if st}
       <div class="cards">
-        {#each [['Total Ships',st.total,'in selection'],['Passengers',st.pax,'combined berths'],['Total Crew',st.crew,'crew members'],['Avg Build Year',st.year,'fleet vintage'],['Passengers / Crew',st.ratio,'passengers per crew'],['Largest Ship',st.big['Ship Name'],`${st.big.GT.toLocaleString()} GT`,'sm']] as [lbl,val,sub,cls]}
+        {#each [['Total Ships',st.total,'in selection'],['Passengers',st.passengers,'combined berths'],['Total Crew',st.crew,'crew members'],['Avg Build Year',st.year,'fleet vintage'],['Passengers / Crew',st.ratio,'passengers per crew'],['Largest Ship',st.big['Ship Name'],`${st.big.GT.toLocaleString()} GT`,'sm']] as [lbl,val,sub,cls]}
           <div class="card"><span class="clbl">{lbl}</span><div class="val {cls||''}">{val}</div><small>{sub}</small></div>
         {/each}
       </div>
@@ -588,8 +588,8 @@ $effect(() => {
       <div class="charts">
         <div class="chart">
           <h3>Passenger Capacity by Line</h3>
-          {#each byLine as [l,pax]}
-            <div class="br"><div class="bl" title={l}><span style={dot(l,6)}></span>{l}</div><div class="bt"><div class="bf" style="width:{(pax/maxPax*100).toFixed(1)}%;background:{lc(l)}"><span>{pax.toLocaleString()}</span></div></div></div>
+          {#each byLine as [l,passengers]}
+            <div class="br"><div class="bl" title={l}><span style={dot(l,6)}></span>{l}</div><div class="bt"><div class="bf" style="width:{(passengers/maxpassengers*100).toFixed(1)}%;background:{lc(l)}"><span>{passengers.toLocaleString()}</span></div></div></div>
           {/each}
         </div>
         <div class="chart">
@@ -635,7 +635,7 @@ $effect(() => {
               {#each lineGroups as l}
                 <tr>
                   <td><span style={dot(l.CruiseLine,8)}></span><span class="sn">{l.CruiseLine}</span></td>
-                  <td>{l.shipCount}</td><td>{l.totalPax.toLocaleString()}</td>
+                  <td>{l.shipCount}</td><td>{l.totalpassengers.toLocaleString()}</td>
                   <td>{l.totalCrew.toLocaleString()}</td><td>{l.avgYear}</td><td>{l.totalDWT.toLocaleString()}</td>
                 </tr>
               {/each}
@@ -657,7 +657,7 @@ $effect(() => {
     <div class="bar"></div>
     <div class="li"><span style={dot(selectedShip.CruiseLine,10)}></span>{selectedShip.CruiseLine}</div>
     <div class="mg">
-      {#each [['Year Built',selectedShip.YearBuilt,`${2019-selectedShip.YearBuilt} years in service`],['Gross Tonnage',selectedShip.GT.toLocaleString(),'GT — total ship volume'],['Passengers',selectedShip.PassengerCapacity.toLocaleString(),'max capacity'],['Crew Members',selectedShip.CrewCount.toLocaleString(),`${(selectedShip.PassengerCapacity/selectedShip.CrewCount).toFixed(1)} pax per crew`],['Dead Weight Tonnage',selectedShip.DWT.toLocaleString(),'DWT — vessel mass']] as [lbl,val,sub]}
+      {#each [['Year Built',selectedShip.YearBuilt,`${2019-selectedShip.YearBuilt} years in service`],['Gross Tonnage',selectedShip.GT.toLocaleString(),'GT — total ship volume'],['Passengers',selectedShip.PassengerCapacity.toLocaleString(),'max capacity'],['Crew Members',selectedShip.CrewCount.toLocaleString(),`${(selectedShip.PassengerCapacity/selectedShip.CrewCount).toFixed(1)} passengers per crew`],['Dead Weight Tonnage',selectedShip.DWT.toLocaleString(),'DWT — vessel mass']] as [lbl,val,sub]}
         <div class="ms"><span class="clbl">{lbl}</span><div class="mv">{val}</div><small>{sub}</small></div>
       {/each}
     </div>
