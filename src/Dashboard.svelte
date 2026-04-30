@@ -447,9 +447,12 @@ $effect(() => {
         labels = [...allDates].sort();
       
         // Build datasets
-        Object.keys(shipGroups).forEach(sh => addDataset(shipGroups[sh], SHIP_COLORS));
-        Object.keys(lineGroups).forEach(cl => addDataset(lineGroups[cl], LINE_COLORS));
         addDataset(globalGroup, {}, true);
+        Object.keys(lineGroups).forEach(cl => addDataset(lineGroups[cl], LINE_COLORS));
+        Object.keys(shipGroups).forEach(sh => addDataset(shipGroups[sh], SHIP_COLORS));
+    //    Object.keys(shipGroups).forEach(sh => addDataset(shipGroups[sh], SHIP_COLORS));
+    //    Object.keys(lineGroups).forEach(cl => addDataset(lineGroups[cl], LINE_COLORS));
+    //    addDataset(globalGroup, {}, true);
       
         // Build chart
         chartInst = new Chart(chartCanvas, {
