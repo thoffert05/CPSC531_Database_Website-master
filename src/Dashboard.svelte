@@ -111,16 +111,32 @@
   let momentumView = $state("Average_and_Max");
 
   function buildColorMaps(shipNames, cruiseLines) {
-    // Ships: 0–91
-    shipNames.forEach((name, i) => {
-      SHIP_COLORS[name] = PALETTE_103[i];
-    });
+    if(showGlobal&&showShips&&showCruiseLines&&selectShip==null&&selectedCruiseLine=='All')
+    {
+      // Ships: 0–91
+      shipNames.forEach((name, i) => {
+        SHIP_COLORS[name] = PALETTE_103[i];
+      });
+    
+      // Cruise lines: 92–101
+      cruiseLines.forEach((name, i) => {
+        LINE_COLORS[name] = PALETTE_103[shipNames.length + i];
+      });
+    }
+    else
+    {
+      const ACTIVE = PALETTE_21;
+
+      // Assign colors only to visible ships
+      shipNames.forEach((name, i) => {
+          SHIP_COLORS[name] = ACTIVE[i % ACTIVE.length];
+      });
   
-    // Cruise lines: 92–101
-    cruiseLines.forEach((name, i) => {
-      LINE_COLORS[name] = PALETTE_103[shipNames.length + i];
-    });
-  
+      // Assign colors only to visible cruise lines
+      cruiseLines.forEach((name, i) => {
+          LINE_COLORS[name] = ACTIVE[(i + shipNames.length) % ACTIVE.length];
+      });
+    }
     // Global line is always white
     GLOBAL_COLOR = "white";
   }
