@@ -68,21 +68,20 @@
   "#f0e442", // golden yellow
   "#4daf4a"  // forest green
 ];
-  function getActivePalette(visibleShips, visibleLines, totalShips, totalLines) {
-    const allShipsVisible = visibleShips === totalShips;
-    const allLinesVisible = visibleLines === totalLines;
+function getActivePalette(visibleShips, visibleLines, totalShips, totalLines) {
+  const allShipsVisible = showShips && visibleShips === totalShips;
+  const allLinesVisible = showCruiseLines && visibleLines === totalLines;
+  const noFilter = chartFilter === 'None' && !chartShip && !chartLine;
+  const globalOn = showGlobal;
 
-    // Global line is always white
-    GLOBAL_COLOR = "white";
-
-    // If everything is visible → use full palette
-    if (allShipsVisible && allLinesVisible) {
-      return PALETTE_103;
-    }
-  
-    // Otherwise → use 21-color palette
-    return PALETTE_21;
+  // Only use full palette when EVERYTHING is on and unfiltered
+  if (allShipsVisible && allLinesVisible && globalOn && noFilter) {
+    return PALETTE_103;
   }
+
+  // Any filtering → use compact palette
+  return PALETTE_21;
+}
 
   const SHIP_COLS = [['Ship Name','Ship Name'],['CruiseLine','Line'],['YearBuilt','Built'],['GT','GT'],['PassengerCapacity','Pax'],['CrewCount','Crew'],['DWT','DWT']];
   const LINE_COLS = [['CruiseLine','Cruise Line'],['shipCount','Ships'],['totalPax','Total Pax'],['totalCrew','Crew'],['avgYear','Avg Built'],['totalDWT','Total DWT']];
