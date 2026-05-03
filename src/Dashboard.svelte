@@ -364,8 +364,8 @@ $effect(() => {
               }
             }
           });
-      
-          return; // IMPORTANT: prevents summary logic from running
+          //this prevents th4e summary logic below from also running
+          return; 
         }
       
         // ============================================================
@@ -476,14 +476,28 @@ $effect(() => {
             }
           }
         });
-// Create HTML legend container
+// Build custom HTML legend
 const legendContainer = document.createElement("div");
 legendContainer.classList.add("chartjs-legend");
 
-// Generate HTML legend
-legendContainer.innerHTML = chartInst.generateLegend();
+// Loop through datasets and build legend items
+chartInst.data.datasets.forEach(ds => {
+  const item = document.createElement("div");
+  item.classList.add("legend-item");
 
-// Insert it under the canvas
+  const box = document.createElement("span");
+  box.classList.add("legend-color-box");
+  box.style.backgroundColor = ds.borderColor;
+
+  const label = document.createElement("span");
+  label.textContent = ds.label;
+
+  item.appendChild(box);
+  item.appendChild(label);
+  legendContainer.appendChild(item);
+});
+
+// Insert legend under the canvas
 chartCanvas.parentNode.appendChild(legendContainer);
       }
   
