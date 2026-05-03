@@ -480,11 +480,11 @@ $effect(() => {
 const legendContainer = document.createElement("div");
 legendContainer.classList.add("chartjs-legend");
 
-// Insert it right after the canvas
-chartCanvas.parentNode.appendChild(legendContainer);
-
-// Fill it with the generated HTML legend
+// Generate HTML legend
 legendContainer.innerHTML = chartInst.generateLegend();
+
+// Insert it under the canvas
+chartCanvas.parentNode.appendChild(legendContainer);
       }
   
   // ── Derived
@@ -611,10 +611,10 @@ $effect(() => {
 
   {#if activeTab === 'ais'}
   <div class="ais-wrap">
-    <div class="ais-chart-box">
-      <canvas bind:this={chartCanvas}></canvas>
-    </div>
+  <div class="ais-chart-box">
+    <canvas bind:this={chartCanvas}></canvas>
   </div>
+</div>
 {/if}
 
       {#if activeTab!=='ais'}
