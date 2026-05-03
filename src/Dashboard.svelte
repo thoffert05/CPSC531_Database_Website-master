@@ -497,8 +497,8 @@ chartInst.data.datasets.forEach(ds => {
   legendContainer.appendChild(item);
 });
 
-// Insert legend under the canvas
-chartCanvas.parentNode.appendChild(legendContainer);
+// Insert legend ABOVE the canvas
+chartCanvas.parentNode.insertBefore(legendContainer, chartCanvas);
       }
   
   // ── Derived
