@@ -1,8 +1,10 @@
 <script>
-  // @ts-nocheck
-  import { onMount } from 'svelte';
-  import { Chart, registerables } from 'chart.js';
-  Chart.register(...registerables);
+// @ts-nocheck
+import { onMount } from 'svelte';
+import { Chart, registerables } from 'chart.js';
+import 'chartjs-plugin-html-legend';
+
+Chart.register(...registerables);
 
   const API = '/api';
   // Full 103-color palette (your existing one)
