@@ -2,7 +2,6 @@
 // @ts-nocheck
 import { onMount } from 'svelte';
 import { Chart, registerables } from 'chart.js';
-import 'chartjs-plugin-html-legend';
 
 Chart.register(...registerables);
 
