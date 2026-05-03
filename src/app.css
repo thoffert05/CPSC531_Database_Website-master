@@ -124,4 +124,5 @@ tr:hover td { background: #111830; cursor: pointer; }
   width: 14px;
   height: 14px;
   border-radius: 3px;
-  dis
+  display: inline-block;
+}
