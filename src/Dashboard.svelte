@@ -308,6 +308,7 @@ $effect(() => {
             datasets.push({
               label,
               data: labels.map(d => map.get(d) ?? null),
+              speed: labels.map(d => speedMap.get(d) ?? null),
               borderColor: isGlobal ? GLOBAL_COLOR : colorMap[label.split(" (")[0]],
               backgroundColor: "rgba(0,0,0,0)",
               borderWidth: isGlobal ? 5 : label.includes("(Max)") ? 4 : 2,
