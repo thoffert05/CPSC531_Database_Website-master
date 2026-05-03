@@ -459,6 +459,8 @@
           const shipGroups = {};
       
           data.forEach(d => {
+            //skip null ships
+            if (!d.ShipName) return;
             const sh = d.ShipName;
             if (!shipGroups[sh]) shipGroups[sh] = [];
       
