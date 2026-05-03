@@ -603,7 +603,7 @@ $effect(() => {
 
   {#if activeTab === 'ais'}
   <div class="ais-wrap">
-    <div class="ais-chart-box">
+    <div class="ais-chart-box legend-wrapper">
       <canvas bind:this={chartCanvas}></canvas>
     </div>
   </div>
