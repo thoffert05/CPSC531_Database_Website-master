@@ -275,7 +275,10 @@ $effect(() => {
           chartInst.destroy();
           chartInst = null;
         }
-      
+        // Remove any existing custom legend
+       const oldLegend = chartCanvas?.parentNode?.querySelector('.chartjs-legend');
+       if (oldLegend) oldLegend.remove();
+
         // Determine visible ships and cruise lines
         const visibleShips = shipNames.filter(sh => shipVisibility[sh] !== false);
         const visibleLines = lines.slice(1).filter(cl => cruiseLineVisibility[cl] !== false);
