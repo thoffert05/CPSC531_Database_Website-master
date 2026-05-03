@@ -104,7 +104,7 @@ tr:hover td { background: #111830; cursor: pointer; }
 .ais-btn:disabled { opacity: 0.5; cursor: default; }
 .ais-err         { color: #e05050; font-size: 13px; margin-bottom: 12px; }
 .ais-chart-box   { background: #0d1224; border: 1px solid #1a2140; border-radius: 10px; padding: 20px; }
-.legend-wrapper {
+.chartjs-legend {
   max-height: 250px;
   overflow-y: auto;
 }
