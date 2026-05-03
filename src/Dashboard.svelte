@@ -450,9 +450,7 @@ $effect(() => {
         addDataset(globalGroup, {}, true);
         Object.keys(lineGroups).forEach(cl => addDataset(lineGroups[cl], LINE_COLORS));
         Object.keys(shipGroups).forEach(sh => addDataset(shipGroups[sh], SHIP_COLORS));
-    //    Object.keys(shipGroups).forEach(sh => addDataset(shipGroups[sh], SHIP_COLORS));
-    //    Object.keys(lineGroups).forEach(cl => addDataset(lineGroups[cl], LINE_COLORS));
-    //    addDataset(globalGroup, {}, true);
+
       
         // Build chart
         chartInst = new Chart(chartCanvas, {
@@ -461,7 +459,7 @@ $effect(() => {
           options: {
             responsive: true,
             plugins: {
-              legend: { position: "top", labels: { color: "#e8eaf0" } }
+              legend: { display: false}//{ position: "top", labels: { color: "#e8eaf0" } }
             },
             scales: {
               x: {
@@ -477,6 +475,15 @@ $effect(() => {
             }
           }
         });
+// Create HTML legend container
+const legendContainer = document.createElement("div");
+legendContainer.classList.add("chartjs-legend");
+
+// Insert it right after the canvas
+chartCanvas.parentNode.appendChild(legendContainer);
+
+// Fill it with the generated HTML legend
+legendContainer.innerHTML = chartInst.generateLegend();
       }
   
   // ── Derived
