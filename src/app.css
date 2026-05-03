@@ -107,22 +107,24 @@ tr:hover td { background: #111830; cursor: pointer; }
 .chartjs-legend {
   max-height: 250px;
   overflow-y: auto;
-  margin-top: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   padding-right: 6px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  gap: 6px;
   color: #e8eaf0;
   font-size: 14px;
+  white-space: nowrap;
 }
 
 .legend-color-box {
   width: 14px;
   height: 14px;
   border-radius: 3px;
-  display: inline-block;
 }
