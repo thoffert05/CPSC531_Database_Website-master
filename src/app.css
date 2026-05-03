@@ -107,4 +107,21 @@ tr:hover td { background: #111830; cursor: pointer; }
 .chartjs-legend {
   max-height: 250px;
   overflow-y: auto;
+  margin-top: 10px;
+  padding-right: 6px;
 }
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #e8eaf0;
+  font-size: 14px;
+}
+
+.legend-color-box {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  dis
